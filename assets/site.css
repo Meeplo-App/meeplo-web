@@ -41,3 +41,6 @@
 @media(max-width:800px){.android-beta{grid-template-columns:1fr;padding:26px 22px;gap:26px;margin-bottom:34px}.android-beta h2{font-size:30px}.download-actions{max-width:none}.hero-art .sparkles i:nth-child(2){right:16%}}
 @media(max-width:380px){.store-button{padding:15px;gap:12px}.store-button strong{font-size:15px}.store-button small{font-size:11px}.store-icon{width:26px}}
 @media(prefers-reduced-motion:reduce){.sparkles i{animation:none;opacity:.7}.store-button{transition:none}.store-button:hover{transform:none}}
+
+/* Meeplo social profiles */
+.social-links{display:flex;flex-wrap:wrap;gap:12px 22px;margin:20px 0}.social-links a{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:650;text-decoration:none;color:var(--purple)}.social-links a:hover{text-decoration:underline}.social-links svg{width:20px;height:20px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7}.social-handle{font-weight:450;color:var(--muted)}footer .social-links{margin:15px 0 0;gap:10px 18px}footer .social-links a{margin:0}
