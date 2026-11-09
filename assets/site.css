@@ -19,6 +19,7 @@
 .document aside details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff}
 .document aside summary{font-weight:700;color:var(--purple);cursor:pointer}
 .document aside ol{margin-top:12px}
+.document aside ol ol{margin:0 0 4px;padding-left:14px}
 @media(max-width:800px){.document aside{margin-bottom:24px;padding-bottom:0;border-bottom:0}.document aside ol{columns:1}}
 
 /* Download cards and Android beta onboarding */
