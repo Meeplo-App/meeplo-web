@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Una tienda en Meeplo</title>
+  <meta name="description" content="Juegos de mesa y eventos de una tienda en Meeplo. Ábrela en la app.">
+  <meta name="apple-itunes-app" content="app-id=6824672527">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Meeplo">
+  <meta property="og:locale" content="es_MX">
+  <meta property="og:title" content="Mira esta tienda en Meeplo">
+  <meta property="og:description" content="Juegos de mesa y eventos de una tienda en Meeplo. Ábrela en la app.">
+  <meta property="og:image" content="https://meeplo.com.mx/assets/meeplo.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="228">
+  <meta property="og:image:height" content="228">
+  <meta property="og:image:alt" content="La mascota amarilla de Meeplo sobre un fondo morado">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Mira esta tienda en Meeplo">
+  <meta name="twitter:description" content="Juegos de mesa y eventos de una tienda en Meeplo. Ábrela en la app.">
+  <meta name="twitter:image" content="https://meeplo.com.mx/assets/meeplo.png">
+  <meta name="twitter:image:alt" content="La mascota amarilla de Meeplo sobre un fondo morado">
+  <meta name="theme-color" content="#fbfaf6">
+  <link rel="icon" href="/assets/meeplo.png" type="image/png">
+  <link rel="stylesheet" href="/assets/listing.css">
+  <link rel="stylesheet" href="/assets/store.css">
+  <script src="/assets/listing-rules.js" defer></script>
+  <script src="/assets/store-rules.js" defer></script>
+  <script src="/assets/store.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+  <header>
+    <a class="brand" href="/" aria-label="Meeplo, inicio"><img src="/assets/meeplo.png" width="42" height="42" alt=""><span>meeplo</span></a>
+    <a class="support" href="/soporte/">¿Necesitas ayuda? <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="contenido" tabindex="-1">
+
+    <!-- The store, filled by assets/store.js -->
+    <article id="store" class="shop" hidden aria-labelledby="name">
+      <div id="cover" class="cover">
+        <p id="pro-seal" class="pro-seal" hidden>✦ TIENDA PRO VERIFICADA</p>
+        <div class="identity">
+          <span id="logo-box" class="logo"><img id="logo" alt="" width="84" height="84" hidden><span id="logo-fallback" aria-hidden="true"></span></span>
+          <div>
+            <h1 id="name"></h1>
+            <p id="verified" class="verified" hidden><svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6l2.3 2 3-.4 1 2.9 2.7 1.4-.6 3 1.9 2.4-1.9 2.4.6 3-2.7 1.4-1 2.9-3-.4-2.3 2-2.3-2-3 .4-1-2.9-2.7-1.4.6-3L1.7 12l1.9-2.4-.6-3 2.7-1.4 1-2.9 3 .4z"/><path d="M8 12.3l2.6 2.6L16.3 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Tienda verificada</p>
+          </div>
+        </div>
+        <p id="description" class="about"></p>
+        <div class="cover-actions">
+          <button class="store" type="button" data-needs-app="store">Ver la tienda en la app</button>
+        </div>
+      </div>
+
+      <section class="visit" aria-label="Visítanos">
+        <p id="status" class="status"></p>
+        <dl class="facts">
+          <dt>Ciudad</dt><dd id="city"></dd>
+          <dt id="address-label">Dirección</dt><dd id="address"></dd>
+        </dl>
+        <div id="links" class="links"></div>
+        <details id="hours-block" class="hours">
+          <summary>Horario</summary>
+          <dl id="hours"></dl>
+        </details>
+      </section>
+
+      <ul id="photos" class="photos shop-photos" aria-label="Fotos de la tienda" hidden></ul>
+
+      <section id="events-block" class="block" aria-labelledby="events-title" hidden>
+        <h2 id="events-title" class="block-title">Próximos eventos</h2>
+        <ul id="events" class="events"></ul>
+        <button id="events-more" class="more" type="button" data-needs-app="events" hidden></button>
+      </section>
+
+      <section id="games-block" class="block" aria-labelledby="games-title">
+        <h2 id="games-title" class="block-title">Juegos a la venta</h2>
+        <ul id="games" class="games"></ul>
+        <p id="games-empty" class="empty" hidden>Por ahora no tiene juegos a la venta.</p>
+        <button id="games-more" class="more" type="button" data-needs-app="games" hidden></button>
+      </section>
+    </article>
+
+    <!-- Not available: not approved, not public, suspended, unknown -->
+    <section id="unavailable" class="unavailable" hidden aria-labelledby="unavailable-title">
+      <p class="eyebrow">JUEGOS DE MESA · SEGUNDAS HISTORIAS</p>
+      <h1 id="unavailable-title">Esta tienda no está disponible.</h1>
+      <p class="lead" style="margin: 0 auto 28px">En Meeplo encuentras tiendas y juegos cerca de ti. Descarga la app y sigue buscando.</p>
+      <div class="stores" data-stores aria-label="Descargar Meeplo"></div>
+    </section>
+
+    <!-- No slug, or the request failed: the generic page -->
+    <section id="generic" class="hero" hidden aria-labelledby="generic-title">
+      <div>
+        <p class="eyebrow">JUEGOS DE MESA · SEGUNDAS HISTORIAS</p>
+        <h1 id="generic-title">Un juego puede<br>tener muchas<br><span>próximas partidas.</span></h1>
+        <p class="lead">Esta tienda se ve en Meeplo. Entra a la app para conocer sus juegos y sus eventos.</p>
+        <div class="stores" data-stores aria-label="Descargar Meeplo"></div>
+        <p class="existing"><strong>¿Ya tienes Meeplo?</strong>Abre el enlace original desde WhatsApp o Mensajes en tu teléfono. Si no se abre la app, comprueba que tengas la última versión.</p>
+      </div>
+      <div class="art" aria-label="La mascota amarilla de Meeplo. Que siga el juego.">
+        <span class="token" aria-hidden="true"></span>
+        <img class="mascot" src="/assets/meeplo.png" width="180" height="180" alt="">
+        <p class="art-title">Que siga<br>el juego.</p>
+        <p class="art-label">COMPRA · VENDE · ENCUÉNTRATE</p>
+        <span class="die" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </div>
+    </section>
+
+    <section class="steps" aria-label="Cómo funciona Meeplo">
+      <div class="step"><span class="number" aria-hidden="true">01</span><div><h2>Encuentra.</h2><p>Explora tiendas y juegos cerca de ti.</p></div></div>
+      <div class="step"><span class="number" aria-hidden="true">02</span><div><h2>Conversa.</h2><p>Conversa con quien vende.</p></div></div>
+      <div class="step"><span class="number" aria-hidden="true">03</span><div><h2>Juega.</h2><p>Aparta tu lugar en los eventos de la tienda.</p></div></div>
+    </section>
+  </main>
+  <footer>
+    <p>Meeplo · Más partidas. Nuevas historias.<br>iOS y Android · México · 18+</p>
+    <nav aria-label="Información legal"><a href="/privacidad/">Privacidad</a><a href="/terminos/">Términos</a><a href="/soporte/">Soporte</a></nav>
+  </footer>
+
+  <div id="banner" class="banner" hidden role="region" aria-label="Descargar Meeplo">
+    <div class="inner">
+      <img src="/assets/meeplo.png" width="40" height="40" alt="">
+      <p class="text"><strong>Consigue Meeplo</strong>Para ver sus juegos y apartar lugar en sus eventos.</p>
+      <div class="stores" data-stores data-compact></div>
+      <button class="close" type="button" aria-label="Cerrar">×</button>
+    </div>
+  </div>
+
+  <dialog id="sheet" class="sheet" aria-labelledby="sheet-title">
+    <h2 id="sheet-title">Necesitas la app</h2>
+    <p id="sheet-reason"></p>
+    <div class="stores" data-stores></div>
+    <button id="open-app" class="store secondary" type="button" hidden>Abrir en la app</button>
+    <button class="later" type="button">Ahora no</button>
+  </dialog>
+</body>
+</html>

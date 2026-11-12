@@ -4,7 +4,8 @@
       {
         "appIDs": ["5PKMFF36PT.com.meeplo.MeeploApp"],
         "components": [
-          { "/": "/l/*", "comment": "A shared listing" }
+          { "/": "/l/*", "comment": "A shared listing" },
+          { "/": "/t/*", "comment": "A store's page" }
         ]
       }
     ]
