@@ -58,6 +58,14 @@ apartar lugar, a game, *Ver los N juegos en la app*, *Ver la tienda en la app* �
 the store's website, Instagram and the maps search are its only links out. The page reads one store per load
 through the Supabase RPC `browse_store_page` (migration 069) with the publishable key, and never writes.
 
+**Places to play** (migrations 073–075). The page asks with `p_with_play_places: true`, so the server may answer
+with a board game café or a ludoteca, which it does only once the flag `lugares_para_jugar` is open to everyone;
+until then such a link shows "no está disponible", as before. The page then says the kind of place («Café de
+juegos», «Café verificado»), shows «Para jugar aquí» (the cost to play and the house rules, in the place's words)
+and the first twelve games of its «Ludoteca», and every event carries «Para mayores de 18 años · Organiza:
+{negocio}». **This request needs migration 074 on the backend it talks to** (the parameter does not exist before
+it), so the change merges only after production has 073–075.
+
 - `assets/store-rules.js` — pure rules (slug parsing and the 404 redirect, opening hours as the apps read
   them, event dates in the store's time zone, places left, maps and app links, the store's colour). Tested
   with `node --test` from the repository root, with the listing page's.

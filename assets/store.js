@@ -20,6 +20,7 @@
     games: "Para ver todos sus juegos necesitas la app.",
     reserve: "Para apartar tu lugar en este evento necesitas la app.",
     events: "Para ver todos sus eventos necesitas la app.",
+    library: "Para ver toda su ludoteca necesitas la app.",
     default: "Para seguir necesitas la app.",
   };
 
@@ -47,7 +48,8 @@
     return fetch(backend.url + "/rest/v1/rpc/browse_store_page", {
       method: "POST",
       headers: { apikey: backend.key, Authorization: "Bearer " + backend.key, "Content-Type": "application/json" },
-      body: JSON.stringify({ p_slug: value }),
+      // Asking for places to play: without it the server never answers with a café or a ludoteca.
+      body: JSON.stringify({ p_slug: value, p_with_play_places: true }),
     }).then(function (response) {
       return response.text().then(function (text) {
         if (response.ok) return { kind: "store", data: JSON.parse(text) };
@@ -73,6 +75,7 @@
     fillCover(store);
     fillVisit(store);
     fillPhotos(store);
+    fillPlay(rules.playFacts(page.play));
     fillEvents(page.events || [], page.event_count || 0, store);
     fillGames(page.listings || [], page.listing_count || 0);
   }
@@ -88,6 +91,10 @@
     cover.classList.add("style-" + (store.cover_style || "aurora"));
     $("pro-seal").hidden = !store.is_pro;
     $("verified").hidden = !!store.is_pro;
+    $("verified-label").textContent = rules.verifiedLabel(store);
+    var kind = rules.venueKindLabel(store);
+    $("kind").textContent = kind || "";
+    $("kind").hidden = !kind;
     $("name").textContent = store.name;
     $("description").textContent = store.description || "";
     $("description").hidden = !store.description;
@@ -165,6 +172,30 @@
     list.hidden = !list.children.length;
   }
 
+  // «Para jugar aquí»: what playing costs, the house rules and the first games of the library. Nothing for a
+  // store where nobody plays.
+  function fillPlay(play) {
+    $("play-block").hidden = !play;
+    if (!play) return;
+    $("play-fee").textContent = play.fee || "";
+    $("play-fee").hidden = $("play-fee-label").hidden = !play.fee;
+    $("play-rules").textContent = play.rules || "";
+    $("play-rules").hidden = $("play-rules-label").hidden = !play.rules;
+    $("play-facts").hidden = !play.fee && !play.rules;
+    var list = $("library");
+    list.textContent = "";
+    play.games.forEach(function (game) {
+      var li = document.createElement("li");
+      li.appendChild(text("span", "title", game.name));
+      if (game.note) li.appendChild(text("span", "note", game.note));
+      list.appendChild(li);
+    });
+    $("library-block").hidden = !play.games.length;
+    var more = $("library-more");
+    more.hidden = play.count <= play.games.length;
+    more.textContent = rules.countLabel(play.count, "el juego", "juegos");
+  }
+
   function fillEvents(events, count, store) {
     var list = $("events");
     list.textContent = "";
@@ -179,6 +210,7 @@
                                    : store.is_online ? null : "En la tienda";
       var details = [where, event.price_note, rules.placesLeftText(event.places_left)].filter(Boolean);
       li.appendChild(text("p", "details", details.join(" · ")));
+      li.appendChild(text("p", "organiser", rules.organiserLine(store.name)));
       var full = event.places_left === 0;
       var button = document.createElement("button");
       button.type = "button";

@@ -166,7 +166,54 @@
     return /^#[0-9a-fA-F]{6}$/.test(color || "") ? color.toLowerCase() : MEEPLO_PURPLE;
   }
 
+  // ---- Places to play --------------------------------------------------------------------------------
+
+  var VENUE_KINDS = {
+    shop: { label: "Tienda", verified: "Tienda verificada" },
+    cafe: { label: "Café de juegos", verified: "Café verificado" },
+    ludoteca: { label: "Ludoteca", verified: "Ludoteca verificada" },
+  };
+
+  // What kind of place a store is, as the apps say it; a shop for none and for a kind this page does not know.
+  function venueKind(store) {
+    return VENUE_KINDS[store && store.venue_kind] ? store.venue_kind : "shop";
+  }
+
+  // «Café de juegos», only for a café or a ludoteca: a shop says nothing.
+  function venueKindLabel(store) {
+    var kind = venueKind(store);
+    return kind === "shop" ? null : VENUE_KINDS[kind].label;
+  }
+
+  function verifiedLabel(store) {
+    return VENUE_KINDS[venueKind(store)].verified;
+  }
+
+  // What the page says about playing there: the cost, the house rules and the library's first games, each only
+  // when the place wrote it. Null when the server sent no play (a shop, or cafés not open to everyone yet).
+  function playFacts(play) {
+    if (!play) return null;
+    var clean = function (value) { return typeof value === "string" && value.trim() ? value.trim() : null; };
+    var games = (play.library || []).filter(function (game) { return game && clean(game.name); })
+      .map(function (game) { return { name: clean(game.name), note: clean(game.note) }; });
+    return {
+      fee: clean(play.fee_note),
+      rules: clean(play.house_rules),
+      games: games,
+      count: Math.max(Number(play.library_count) || 0, games.length),
+    };
+  }
+
+  // «Para mayores de 18 años · Organiza: Café Meeple», under every event: the business hosts it, not Meeplo.
+  function organiserLine(storeName) {
+    return "Para mayores de 18 años · Organiza: " + storeName;
+  }
+
   return {
+    venueKindLabel: venueKindLabel,
+    verifiedLabel: verifiedLabel,
+    playFacts: playFacts,
+    organiserLine: organiserLine,
     parseSlug: parseSlug,
     pathSlug: pathSlug,
     pathRedirect: pathRedirect,
