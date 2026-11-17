@@ -28,6 +28,8 @@
 .visit { display: grid; gap: 12px; }
 .status { margin: 0; font-weight: 650; color: var(--muted); }
 .status.open { color: #1f7a4a; }
+.place-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.place-facts li { padding: 5px 12px; border-radius: 999px; background: #efecff; color: var(--ink); font-size: 14px; font-weight: 600; }
 .visit .facts { margin: 0; }
 .links { display: flex; flex-wrap: wrap; gap: 10px 22px; font-weight: 600; }
 .hours summary { cursor: pointer; color: var(--purple); font-weight: 650; }

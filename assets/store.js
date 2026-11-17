@@ -20,7 +20,7 @@
     games: "Para ver todos sus juegos necesitas la app.",
     reserve: "Para apartar tu lugar en este evento necesitas la app.",
     events: "Para ver todos sus eventos necesitas la app.",
-    library: "Para ver toda su ludoteca necesitas la app.",
+    library: "Para ver todos sus juegos de la casa necesitas la app.",
     default: "Para seguir necesitas la app.",
   };
 
@@ -44,19 +44,30 @@
 
   // ---- Data --------------------------------------------------------------------------------------
 
+  // Asks for places to play: without p_with_play_places the server never answers with a game space, nor says
+  // what playing at a shop is like. A backend before migration 074 has no such parameter (PostgREST answers
+  // PGRST202, no function with those arguments), so the page asks again as before and shows a plain store.
   function fetchStore(value) {
+    return callStorePage({ p_slug: value, p_with_play_places: true }).then(function (result) {
+      return result.kind === "missing-function" ? callStorePage({ p_slug: value }) : result;
+    }).then(function (result) {
+      return result.kind === "missing-function" ? { kind: "generic" } : result;
+    }).catch(function () { return { kind: "generic" }; });
+  }
+
+  function callStorePage(args) {
     return fetch(backend.url + "/rest/v1/rpc/browse_store_page", {
       method: "POST",
       headers: { apikey: backend.key, Authorization: "Bearer " + backend.key, "Content-Type": "application/json" },
-      // Asking for places to play: without it the server never answers with a café or a ludoteca.
-      body: JSON.stringify({ p_slug: value, p_with_play_places: true }),
+      body: JSON.stringify(args),
     }).then(function (response) {
       return response.text().then(function (text) {
         if (response.ok) return { kind: "store", data: JSON.parse(text) };
         if (text.indexOf("STORE_NOT_AVAILABLE") !== -1) return { kind: "unavailable" };
+        if (text.indexOf("PGRST202") !== -1) return { kind: "missing-function" };
         return { kind: "generic" };
       });
-    }).catch(function () { return { kind: "generic" }; });
+    });
   }
 
   // ---- Rendering ---------------------------------------------------------------------------------
@@ -74,9 +85,13 @@
     document.title = store.name + " · Meeplo";
     fillCover(store);
     fillVisit(store);
+    fillFacts(rules.placeFacts(store, page.play));
     fillPhotos(store);
     fillPlay(rules.playFacts(page.play));
     fillEvents(page.events || [], page.event_count || 0, store);
+    // A place that does not sell has nothing «En venta» (the server sends no listings): no section, as the apps
+    // show no tab.
+    $("games-block").hidden = !rules.sellsGames(store);
     fillGames(page.listings || [], page.listing_count || 0);
   }
 
@@ -158,6 +173,15 @@
     return a;
   }
 
+  // «Se juega aquí», «Vende juegos», «Comida y bebida»: what the place offers, as the apps' chips. None for a
+  // shop where nobody plays.
+  function fillFacts(facts) {
+    var list = $("place-facts");
+    list.textContent = "";
+    facts.forEach(function (fact) { list.appendChild(text("li", "", fact)); });
+    list.hidden = !facts.length;
+  }
+
   function fillPhotos(store) {
     var list = $("photos");
     list.textContent = "";
@@ -172,8 +196,8 @@
     list.hidden = !list.children.length;
   }
 
-  // «Para jugar aquí»: what playing costs, the house rules and the first games of the library. Nothing for a
-  // store where nobody plays.
+  // «Para jugar aquí»: what playing costs, the house rules and the first of its «Juegos de la casa». Nothing for
+  // a place where nobody plays.
   function fillPlay(play) {
     $("play-block").hidden = !play;
     if (!play) return;

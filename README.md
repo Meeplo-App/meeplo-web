@@ -49,7 +49,7 @@ query form, `/t/?s=<slug>`, and `t/index.html` shows the store **read-only**:
 
 | State | When | What shows |
 | --- | --- | --- |
-| Store | the server answers | the cover in the store's colour (a Pro store's own, with its photo), logo, name, «Tienda verificada» or the Pro seal, description; whether it is open now, city and address, «Cómo llegar» (a maps search by name and address, never a position), website, Instagram, the week's hours; its photos; its five soonest events; twelve of its games for sale with prices |
+| Store | the server answers | the cover in the store's colour (a Pro store's own, with its photo), logo, name, «Tienda verificada» or the Pro seal, description; whether it is open now, city and address, «Cómo llegar» (a maps search by name and address, never a position), website, Instagram, the week's hours; its photos; its five soonest events; twelve of its games for sale with prices («En venta») |
 | Not available | not approved, not public, suspended, an unknown slug | "Esta tienda no está disponible." and the store buttons |
 | Generic | no slug, a malformed one, or the request failed | the original page, worded for a store |
 
@@ -58,13 +58,17 @@ apartar lugar, a game, *Ver los N juegos en la app*, *Ver la tienda en la app* �
 the store's website, Instagram and the maps search are its only links out. The page reads one store per load
 through the Supabase RPC `browse_store_page` (migration 069) with the publishable key, and never writes.
 
-**Places to play** (migrations 073–075). The page asks with `p_with_play_places: true`, so the server may answer
-with a board game café or a ludoteca, which it does only once the flag `lugares_para_jugar` is open to everyone;
-until then such a link shows "no está disponible", as before. The page then says the kind of place («Café de
-juegos», «Café verificado»), shows «Para jugar aquí» (the cost to play and the house rules, in the place's words)
-and the first twelve games of its «Ludoteca», and every event carries «Para mayores de 18 años · Organiza:
-{negocio}». **This request needs migration 074 on the backend it talks to** (the parameter does not exist before
-it), so the change merges only after production has 073–075.
+**Places to play** (migrations 073–075). A place is a «Tienda» (`venue_kind` `shop`) or an «Espacio de juegos»
+(`play_space`). The page asks with `p_with_play_places: true`, so the server may answer with a game space, which it
+does only once the flag `lugares_para_jugar` is open to everyone; until then such a link shows "no está
+disponible", as before. The page then says the kind under a game space's name («Espacio de juegos», «Espacio
+verificado»; a shop says nothing new), the apps' chips under the opening status — «Se juega aquí», «Vende juegos»,
+«Comida y bebida», in that order, each only when true, none for a shop where nobody plays — «Para jugar aquí»
+(the cost to play and the house rules, in the place's words) with the first twelve of its «Juegos de la casa»,
+and every event carries «Para mayores de 18 años · Organiza: {negocio}». The games for sale are «En venta»; a place
+that does not sell (`store.sells_games` false, and the server sends no listings) has no such section.
+A backend before 074 has no `p_with_play_places` (PostgREST answers `PGRST202`): the page asks again with the
+slug alone and, with none of the new fields, shows a plain store. Merge only once production has 073–075.
 
 - `assets/store-rules.js` — pure rules (slug parsing and the 404 redirect, opening hours as the apps read
   them, event dates in the store's time zone, places left, maps and app links, the store's colour). Tested

@@ -93,17 +93,44 @@ test('brandColor is a Pro store\'s own, else Meeplo\'s purple', () => {
   assert.equal(rules.brandColor({ is_pro: true, brand_color: 'red' }), '#4a44c6');
 });
 
-test('a café and a ludoteca say their kind; a shop and an unknown kind say nothing', () => {
-  assert.equal(rules.venueKindLabel({ venue_kind: 'cafe' }), 'Café de juegos');
-  assert.equal(rules.venueKindLabel({ venue_kind: 'ludoteca' }), 'Ludoteca');
+test('a game space says its kind; a shop, none and an unknown kind say nothing', () => {
+  assert.equal(rules.venueKindLabel({ venue_kind: 'play_space' }), 'Espacio de juegos');
   assert.equal(rules.venueKindLabel({ venue_kind: 'shop' }), null);
   assert.equal(rules.venueKindLabel({}), null);
   assert.equal(rules.venueKindLabel({ venue_kind: 'bar' }), null);
+  assert.equal(rules.venueKindLabel({ venue_kind: 'toString' }), null);
 });
 test('the check mark is labelled by kind', () => {
-  assert.equal(rules.verifiedLabel({ venue_kind: 'cafe' }), 'Café verificado');
-  assert.equal(rules.verifiedLabel({ venue_kind: 'ludoteca' }), 'Ludoteca verificada');
+  assert.equal(rules.verifiedLabel({ venue_kind: 'play_space' }), 'Espacio verificado');
+  assert.equal(rules.verifiedLabel({ venue_kind: 'shop' }), 'Tienda verificada');
   assert.equal(rules.verifiedLabel({}), 'Tienda verificada');
+  assert.equal(rules.verifiedLabel({ venue_kind: 'bar' }), 'Tienda verificada');
+});
+test('a place sells games unless the server says it does not', () => {
+  assert.equal(rules.sellsGames({ sells_games: false }), false);
+  assert.equal(rules.sellsGames({ sells_games: true }), true);
+  assert.equal(rules.sellsGames({}), true);
+  assert.equal(rules.sellsGames({ sells_games: null }), true);
+});
+test('placeFacts: a shop where nobody plays (or a backend before 073) shows none', () => {
+  assert.deepEqual(rules.placeFacts({}, undefined), []);
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'shop', sells_games: true }, null), []);
+});
+test('placeFacts: in the apps\' order, each only when true', () => {
+  const play = { fee_note: null, house_rules: null, serves_food: true };
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'shop', sells_games: true }, play),
+    ['Se juega aquí', 'Vende juegos', 'Comida y bebida']);
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'shop', sells_games: true }, { serves_food: false }),
+    ['Se juega aquí', 'Vende juegos']);
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'play_space', sells_games: true }, play),
+    ['Se juega aquí', 'Vende juegos', 'Comida y bebida']);
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'play_space', sells_games: false }, play),
+    ['Se juega aquí', 'Comida y bebida']);
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'play_space', sells_games: false }, { serves_food: false }),
+    ['Se juega aquí']);
+});
+test('placeFacts: without play, no «Se juega aquí» and no food', () => {
+  assert.deepEqual(rules.placeFacts({ venue_kind: 'play_space', sells_games: true }, null), ['Vende juegos']);
 });
 test('playFacts is null without play, and keeps only what the place wrote', () => {
   assert.equal(rules.playFacts(null), null);
@@ -113,7 +140,7 @@ test('playFacts is null without play, and keeps only what the place wrote', () =
 });
 test('playFacts lists the library games with their notes and counts them all', () => {
   const facts = rules.playFacts({
-    fee_note: null, house_rules: 'Sin alcohol',
+    fee_note: null, house_rules: 'Sin alcohol', serves_food: false,
     library: [{ name: 'Azul', note: 'Dos copias' }, { name: 'Catan', note: null }, { name: ' ' }, null],
     library_count: 16,
   });
@@ -122,5 +149,5 @@ test('playFacts lists the library games with their notes and counts them all', (
   assert.equal(rules.playFacts({ library: [{ name: 'Azul' }] }).count, 1);
 });
 test('every event names the business as its organiser', () => {
-  assert.equal(rules.organiserLine('Café Meeple'), 'Para mayores de 18 años · Organiza: Café Meeple');
+  assert.equal(rules.organiserLine('Dados y Meeples'), 'Para mayores de 18 años · Organiza: Dados y Meeples');
 });
