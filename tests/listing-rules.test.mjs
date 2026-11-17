@@ -58,3 +58,36 @@ test('labels and store URLs', () => {
   assert.equal(rules.storeURLs.ios, 'https://apps.apple.com/mx/app/meeplo/id6824672527');
   assert.equal(rules.storeURLs.android, 'https://play.google.com/store/apps/details?id=com.meeplo.meeploapp');
 });
+
+const LISTING = { title: 'Catan', condition: 'good', price_amount: '650.00', price_currency: 'MXN',
+  description: 'Completo,  con\ninstrucciones en español.' };
+test('canonicalURL keeps only the id', () =>
+  assert.equal(rules.canonicalURL(UUID), `https://meeplo.com.mx/l/?id=${UUID}`));
+test('searchTitle says used or sealed and the price', () => {
+  assert.equal(rules.searchTitle(LISTING), 'Catan usado · $650 · Meeplo');
+  assert.equal(rules.searchTitle({ ...LISTING, condition: 'sealed' }), 'Catan sellado · $650 · Meeplo');
+});
+test('searchDescription leads with the condition and price, then the description', () => {
+  assert.equal(rules.searchDescription(LISTING),
+    'Catan, buen estado, por $650 MXN en Meeplo. Completo, con instrucciones en español.');
+  assert.equal(rules.searchDescription({ ...LISTING, condition: 'sealed', description: null }),
+    'Catan, sellado, por $650 MXN en Meeplo.');
+});
+test('searchDescription stops at 160 characters on a word', () => {
+  const text = rules.searchDescription({ ...LISTING, description: 'palabra '.repeat(40) });
+  assert.ok(text.length <= 160);
+  assert.match(text, /palabra…$/);
+});
+test('structuredData is a Product with an in-stock Offer and never the seller', () => {
+  const data = rules.structuredData(LISTING, UUID, ['https://x/a.jpg']);
+  assert.equal(data['@type'], 'Product');
+  assert.equal(data.offers.price, '650');
+  assert.equal(data.offers.priceCurrency, 'MXN');
+  assert.equal(data.offers.itemCondition, 'https://schema.org/UsedCondition');
+  assert.equal(data.offers.availability, 'https://schema.org/InStock');
+  assert.deepEqual(data.image, ['https://x/a.jpg']);
+  assert.equal(rules.structuredData({ ...LISTING, condition: 'sealed' }, UUID, []).offers.itemCondition,
+    'https://schema.org/NewCondition');
+  assert.equal(rules.structuredData({ ...LISTING, condition: 'sealed' }, UUID, []).image, undefined);
+  assert.ok(!JSON.stringify(data).includes('seller'));
+});

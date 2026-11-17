@@ -86,6 +86,56 @@
       encodeURIComponent(pageURL) + ";end";
   }
 
+  // ---- Search engines ----------------------------------------------------------------------------
+  // What Google reads once the page has rendered a listing. Never the seller: their name stays out of
+  // the title, the description and the structured data, and the page marks their block data-nosnippet.
+
+  var SITE = "https://meeplo.com.mx";
+
+  // The one address Google should keep for a listing, whatever parameters the shared link carried.
+  function canonicalURL(id) {
+    return SITE + "/l/?id=" + id;
+  }
+
+  // "Catan usado · $650 · Meeplo"; a sealed copy reads "sellado".
+  function searchTitle(listing) {
+    var state = listing.condition === "sealed" ? "sellado" : "usado";
+    return listing.title + " " + state + " · " + formatPrice(listing.price_amount, listing.price_currency) + " · Meeplo";
+  }
+
+  // "Catan, buen estado, por $650 MXN en Meeplo. <the description>…", at most 160 characters.
+  function searchDescription(listing) {
+    var condition = (labels.condition[listing.condition] || "").toLowerCase();
+    var price = formatPrice(listing.price_amount, listing.price_currency);
+    if (!listing.price_currency || listing.price_currency === "MXN") price += " MXN";
+    var text = listing.title + (condition ? ", " + condition + "," : "") + " por " + price + " en Meeplo.";
+    var description = (listing.description || "").replace(/\s+/g, " ").trim();
+    if (description) text += " " + description;
+    return text.length <= 160 ? text : text.slice(0, 159).replace(/\s+\S*$/, "") + "…";
+  }
+
+  // schema.org Product with one Offer: what lets Google show the price and condition in a result.
+  function structuredData(listing, id, photoURLs) {
+    var data = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: listing.title,
+      url: canonicalURL(id),
+      offers: {
+        "@type": "Offer",
+        url: canonicalURL(id),
+        price: String(typeof listing.price_amount === "number" ? listing.price_amount : parseFloat(listing.price_amount)),
+        priceCurrency: listing.price_currency || "MXN",
+        availability: "https://schema.org/InStock",
+        itemCondition: listing.condition === "sealed" ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+      },
+    };
+    if (photoURLs && photoURLs.length) data.image = photoURLs;
+    var description = (listing.description || "").replace(/\s+/g, " ").trim();
+    if (description) data.description = description;
+    return data;
+  }
+
   // The app's Spanish wording (Meeplo-iOS ListingLabels.swift and ConditionBadge.swift).
   var labels = {
     condition: { sealed: "Sellado", like_new: "Como nuevo", good: "Buen estado", acceptable: "Aceptable" },
@@ -113,6 +163,10 @@
     avatarURL: avatarURL,
     androidIntentURL: androidIntentURL,
     storeURLs: storeURLs,
+    canonicalURL: canonicalURL,
+    searchTitle: searchTitle,
+    searchDescription: searchDescription,
+    structuredData: structuredData,
     labels: labels,
   };
 });
