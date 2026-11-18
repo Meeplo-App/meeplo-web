@@ -69,6 +69,9 @@ footer a { color: var(--muted); text-decoration: none; }
 .actions .store { flex: 1; justify-content: center; }
 .heart { width: 52px; height: 52px; border-radius: 13px; border: 1px solid var(--line); background: var(--card); font-size: 22px; cursor: pointer; color: var(--purple); }
 
+/* The link to the catalog (/buscar/) */
+.more { margin: 18px 0 0; font-size: 15px; font-weight: 650; }
+
 /* Not available */
 .unavailable { text-align: center; padding: 48px 0 56px; }
 .unavailable h1 { font-size: clamp(30px, 4.6vw, 48px); letter-spacing: -1.6px; }
