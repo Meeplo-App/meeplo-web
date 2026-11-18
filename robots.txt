@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://szulqqeyuxjqpynvggvy.supabase.co/functions/v1/sitemap/sitemap.txt

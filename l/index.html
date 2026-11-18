@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex">
+  <!-- Indexable: Google may show a listing. assets/listing.js adds noindex when there is no listing to show. -->
   <title>Un anuncio en Meeplo</title>
   <meta name="description" content="Juegos de mesa usados cerca de ti. Abre el anuncio en la app.">
   <meta name="apple-itunes-app" content="app-id=6824672527">
@@ -47,7 +47,7 @@
         <dl id="facts" class="facts"></dl>
         <p id="description" class="description"></p>
         <h2 class="about-title">Quien vende</h2>
-        <button id="seller" class="seller" type="button" data-needs-app="seller">
+        <button id="seller" class="seller" type="button" data-needs-app="seller" data-nosnippet>
           <img id="seller-avatar" alt="" width="48" height="48" hidden>
           <span id="seller-avatar-fallback" class="avatar-fallback" aria-hidden="true"></span>
           <span>

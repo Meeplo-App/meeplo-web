@@ -37,6 +37,26 @@ python3 -m http.server 8080
 open "http://localhost:8080/l/?id=<uuid>&env=staging"
 ```
 
+### Google
+
+The listing page can appear in Google's results. Google runs the page's JavaScript, so what
+`assets/listing.js` sets once a listing loads is what it indexes:
+
+- **Title:** «Catan usado · $650 · Meeplo» («sellado» for a sealed copy).
+- **Description:** «Catan, buen estado, por $650 MXN en Meeplo.» followed by the listing's description, cut at 160 characters.
+- **Canonical address:** `https://meeplo.com.mx/l/?id=<uuid>`, whatever else the shared link carried (`utm_…`, `env`).
+- **Structured data:** a schema.org `Product` with one `Offer` (price, MXN, in stock, used or new), so a result can show the price.
+- **`robots`:** the static HTML has none, so a listing is indexable; the *not available* and *generic* states add `noindex`, so a sold or withdrawn listing leaves the results.
+- **The seller is never in it:** not in the title, the description or the structured data, and their block is `data-nosnippet`.
+  The page still shows their username to visitors, as before.
+
+The rules are in `assets/listing-rules.js` (`searchTitle`, `searchDescription`, `canonicalURL`, `structuredData`)
+and tested with the others. The store page (`/t/`) and `404.html` keep `noindex`.
+
+The sitemap is Meeplo-iOS's `sitemap` Edge Function, which lists every listing the page shows when a search engine
+asks; `robots.txt` names its production address (Google accepts a sitemap on another host that way). The owner's step is Google Search Console: verify `meeplo.com.mx`,
+then inspect a listing's address with *URL Inspection* to see the page as Google rendered it.
+
 The production page talks to production, so it goes live only once migration 050 is promoted there.
 
 ## The public store page — `/t/<slug>`
