@@ -53,8 +53,8 @@ The listing page can appear in Google's results. Google runs the page's JavaScri
 The rules are in `assets/listing-rules.js` (`searchTitle`, `searchDescription`, `canonicalURL`, `structuredData`)
 and tested with the others. The store page (`/t/`) and `404.html` keep `noindex`.
 
-Not done here: a sitemap. Google finds a listing only through links to it until there is one, and it needs a
-backend that lists the active listings (Meeplo-iOS). The owner's step is Google Search Console: verify `meeplo.com.mx`,
+The sitemap is Meeplo-iOS's `sitemap` Edge Function, which lists every listing the page shows when a search engine
+asks; `robots.txt` names its production address (Google accepts a sitemap on another host that way). The owner's step is Google Search Console: verify `meeplo.com.mx`,
 then inspect a listing's address with *URL Inspection* to see the page as Google rendered it.
 
 The production page talks to production, so it goes live only once migration 050 is promoted there.
