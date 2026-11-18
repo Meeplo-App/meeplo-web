@@ -1,0 +1,52 @@
+/* The public catalog page (/buscar/), on top of listing.css: the search box, the grid of listings, the pager. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+.catalog-head { padding: 16px 0 8px; max-width: 720px; }
+.catalog-head h1 { font-size: clamp(34px, 4.6vw, 52px); letter-spacing: -1.8px; line-height: 1.08; margin: 0 0 16px; }
+.catalog-head .lead { max-width: 620px; margin-bottom: 24px; }
+
+.search { display: flex; gap: 10px; max-width: 620px; }
+.search input { flex: 1; min-width: 0; min-height: 52px; padding: 12px 18px; font: inherit; font-size: 17px; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.search input:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+.search button { min-height: 52px; padding: 0 22px; border: 0; border-radius: 14px; background: var(--purple); color: white; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+.search button:hover { background: #3933ad; }
+
+.summary { margin: 28px 0 14px; font-size: 14px; color: var(--muted); min-height: 1.65em; }
+
+.results { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+.card { display: flex; flex-direction: column; height: 100%; color: var(--ink); text-decoration: none; background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.card:hover { border-color: #c9c3e6; box-shadow: 0 8px 22px #251e3712; }
+.card:focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
+.cover { aspect-ratio: 4 / 3; background: #efecff; }
+.cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover.missing { background: #efecff url("/assets/meeplo.png") center / 64px no-repeat; }
+.card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+.card h2 { font-size: 16px; line-height: 1.3; margin: 0 0 4px; font-weight: 700; overflow-wrap: anywhere; }
+.details { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.card-price { margin: auto 0 0; font-size: 19px; font-weight: 750; letter-spacing: -0.4px; }
+
+.notice { text-align: center; padding: 36px 0 24px; }
+.notice h2 { font-size: 24px; letter-spacing: -0.6px; margin: 0 0 8px; }
+.notice p { color: var(--muted); margin: 0; }
+
+.pager { display: flex; justify-content: space-between; gap: 12px; margin: 28px 0 8px; }
+.pager a { padding: 12px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); text-decoration: none; font-weight: 650; font-size: 15px; }
+.pager a[rel="next"] { margin-left: auto; }
+
+.get-app { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin: 44px 0 40px; padding: 26px 28px; border-radius: 24px; background: var(--plum); color: white; }
+.get-app h2 { font-size: 22px; letter-spacing: -0.6px; margin: 0 0 6px; }
+.get-app p { margin: 0; color: #ffffffc7; font-size: 15px; max-width: 520px; }
+.get-app .stores { flex-shrink: 0; }
+.get-app .store { background: var(--yellow); color: var(--plum); }
+.get-app .store:hover { background: #ffe48a; }
+
+@media (max-width: 760px) {
+  .catalog-head h1 { font-size: clamp(30px, 8.5vw, 40px); }
+  .search button { padding: 0 16px; }
+  .results { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .card { border-radius: 16px; }
+  .card-body { padding: 10px 11px 12px; }
+  .card h2 { font-size: 15px; }
+  .card-price { font-size: 17px; }
+  .get-app { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+}

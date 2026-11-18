@@ -59,6 +59,28 @@ then inspect a listing's address with *URL Inspection* to see the page as Google
 
 The production page talks to production, so it goes live only once migration 050 is promoted there.
 
+## The public catalog page — `/buscar/`
+
+The listings a visitor without the app can open, so search engines reach every listing from the site itself (the
+sitemap lives on another host, and until this page nothing here linked to a listing). Linked from the home page (the
+menu, «Buscar juegos», and the hero, «Ver juegos en venta») and from every listing page («Ver más juegos en venta»).
+
+- **What shows:** 24 listings per page, most recently changed first, each a card — cover, title, condition and category
+  in the app's words («Expansión» when it is one), price — that links to `/l/?id=<uuid>`. A search box (`?q=`) matches
+  the title without accents or case. «Anterior» and «Siguiente» (`?pagina=N`). Never the seller, the meeting places or
+  the description.
+- **States:** the cards; «No encontramos ese juego.» for a search with no match (or «Todavía no hay juegos en venta.»);
+  «No pudimos cargar los juegos.» when the request fails (and `noindex`).
+- **Data:** one call per load to the Supabase RPC `browse_catalog_page` (Meeplo-iOS migration 081) with the publishable
+  key, read-only, by `browse_listing_page`'s rule: a card always opens. It deploys only once 081 is in production.
+- **Google:** the catalog's pages are indexable, each with its own canonical address (`/buscar/`, `/buscar/?pagina=2`),
+  title «Juegos de mesa usados en venta en México · Meeplo» and a schema.org `ItemList` of its cards. A search is
+  `noindex, follow` with the catalog as its canonical address.
+- `assets/catalog-rules.js` — pure rules (the address, paging, titles, the card's text, structured data), tested with
+  `node --test`; `assets/catalog.js` — the page; `assets/catalog.css` — its styles, on top of `listing.css`.
+- **Trying it locally:** `?env=staging` or `?env=local` as on the listing page, only on localhost; with `env=local`,
+  `&port=55321` points it at a UI-test lane's stack.
+
 ## The public store page — `/t/<slug>`
 
 The link the apps share for a store, and the one its poster's QR code holds: `https://meeplo.com.mx/t/<slug>`,
