@@ -28,6 +28,8 @@
 .visit { display: grid; gap: 12px; }
 .status { margin: 0; font-weight: 650; color: var(--muted); }
 .status.open { color: #1f7a4a; }
+.place-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.place-facts li { padding: 5px 12px; border-radius: 999px; background: #efecff; color: var(--ink); font-size: 14px; font-weight: 600; }
 .visit .facts { margin: 0; }
 .links { display: flex; flex-wrap: wrap; gap: 10px 22px; font-weight: 600; }
 .hours summary { cursor: pointer; color: var(--purple); font-weight: 650; }
@@ -59,6 +61,13 @@
 .game .condition { color: var(--muted); font-size: 13px; }
 .more { justify-self: start; background: transparent; border: 1px solid var(--line); border-radius: 13px; padding: 12px 18px; color: var(--purple); font: inherit; font-weight: 650; cursor: pointer; min-height: 48px; }
 .empty { margin: 0; color: var(--muted); }
+.kind { margin: 4px 0 0; font-weight: 650; }
+.block-subtitle { margin: 18px 0 10px; font-size: 18px; }
+.library { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 18px; }
+.library li { display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.library .title { font-weight: 650; }
+.library .note, .event .organiser { color: var(--muted); font-size: 13px; }
+.event .organiser { margin: 4px 0 0; }
 
 @media (max-width: 760px) {
   .cover { padding: 22px 18px; border-radius: 24px; }

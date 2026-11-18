@@ -46,7 +46,8 @@
           <span id="logo-box" class="logo"><img id="logo" alt="" width="84" height="84" hidden><span id="logo-fallback" aria-hidden="true"></span></span>
           <div>
             <h1 id="name"></h1>
-            <p id="verified" class="verified" hidden><svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6l2.3 2 3-.4 1 2.9 2.7 1.4-.6 3 1.9 2.4-1.9 2.4.6 3-2.7 1.4-1 2.9-3-.4-2.3 2-2.3-2-3 .4-1-2.9-2.7-1.4.6-3L1.7 12l1.9-2.4-.6-3 2.7-1.4 1-2.9 3 .4z"/><path d="M8 12.3l2.6 2.6L16.3 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Tienda verificada</p>
+            <p id="kind" class="kind" hidden></p>
+            <p id="verified" class="verified" hidden><svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6l2.3 2 3-.4 1 2.9 2.7 1.4-.6 3 1.9 2.4-1.9 2.4.6 3-2.7 1.4-1 2.9-3-.4-2.3 2-2.3-2-3 .4-1-2.9-2.7-1.4.6-3L1.7 12l1.9-2.4-.6-3 2.7-1.4 1-2.9 3 .4z"/><path d="M8 12.3l2.6 2.6L16.3 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="verified-label">Tienda verificada</span></p>
           </div>
         </div>
         <p id="description" class="about"></p>
@@ -57,6 +58,7 @@
 
       <section class="visit" aria-label="Visítanos">
         <p id="status" class="status"></p>
+        <ul id="place-facts" class="place-facts" aria-label="Lo que ofrece" hidden></ul>
         <dl class="facts">
           <dt>Ciudad</dt><dd id="city"></dd>
           <dt id="address-label">Dirección</dt><dd id="address"></dd>
@@ -70,6 +72,20 @@
 
       <ul id="photos" class="photos shop-photos" aria-label="Fotos de la tienda" hidden></ul>
 
+      <section id="play-block" class="block" aria-labelledby="play-title" hidden>
+        <h2 id="play-title" class="block-title">Para jugar aquí</h2>
+        <dl id="play-facts" class="facts">
+          <dt id="play-fee-label">Costo por jugar</dt><dd id="play-fee"></dd>
+          <dt id="play-rules-label">Reglas de la casa</dt><dd id="play-rules"></dd>
+        </dl>
+        <div id="library-block" hidden>
+          <h3 class="block-subtitle">Juegos de la casa</h3>
+          <ul id="library" class="library"></ul>
+          <p class="empty">Son para jugar en el lugar, no están a la venta.</p>
+          <button id="library-more" class="more" type="button" data-needs-app="library" hidden></button>
+        </div>
+      </section>
+
       <section id="events-block" class="block" aria-labelledby="events-title" hidden>
         <h2 id="events-title" class="block-title">Próximos eventos</h2>
         <ul id="events" class="events"></ul>
@@ -77,7 +93,7 @@
       </section>
 
       <section id="games-block" class="block" aria-labelledby="games-title">
-        <h2 id="games-title" class="block-title">Juegos a la venta</h2>
+        <h2 id="games-title" class="block-title">En venta</h2>
         <ul id="games" class="games"></ul>
         <p id="games-empty" class="empty" hidden>Por ahora no tiene juegos a la venta.</p>
         <button id="games-more" class="more" type="button" data-needs-app="games" hidden></button>

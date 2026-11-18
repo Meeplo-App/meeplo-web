@@ -166,7 +166,78 @@
     return /^#[0-9a-fA-F]{6}$/.test(color || "") ? color.toLowerCase() : MEEPLO_PURPLE;
   }
 
+  // ---- Places to play --------------------------------------------------------------------------------
+
+  // The two kinds of place, as the apps say them (the owner's decision of 2026-11-16): a shop sells games and,
+  // with tables, may also be a place to play; a game space is a place to play that may also sell.
+  var VENUE_KINDS = {
+    shop: { label: "Tienda", verified: "Tienda verificada" },
+    play_space: { label: "Espacio de juegos", verified: "Espacio verificado" },
+  };
+
+  // What kind of place a store is; a shop for none (a backend before 073) and for a kind this page does not know.
+  function venueKind(store) {
+    return VENUE_KINDS.hasOwnProperty(store && store.venue_kind) ? store.venue_kind : "shop";
+  }
+
+  // «Espacio de juegos» under a game space's name; a shop says nothing, as in the apps.
+  function venueKindLabel(store) {
+    var kind = venueKind(store);
+    return kind === "shop" ? null : VENUE_KINDS[kind].label;
+  }
+
+  // What the check mark says: «Tienda verificada», «Espacio verificado».
+  function verifiedLabel(store) {
+    return VENUE_KINDS[venueKind(store)].verified;
+  }
+
+  // Whether the place sells games: true unless the server says it does not (a backend before 074 never says).
+  function sellsGames(store) {
+    return !(store && store.sells_games === false);
+  }
+
+  // What the place offers, as the apps' chips say it, each only when true and always in this order: «Se juega
+  // aquí», «Vende juegos», «Comida y bebida». People play there when the server sends play (it does only for a
+  // place where people play, and only once places to play are open to everyone). A shop where nobody plays shows
+  // none: it is just a store. The apps' PlaceFact.facts.
+  function placeFacts(store, play) {
+    var offersPlay = !!play;
+    if (venueKind(store) !== "play_space" && !offersPlay) return [];
+    return [
+      offersPlay ? "Se juega aquí" : null,
+      sellsGames(store) ? "Vende juegos" : null,
+      offersPlay && play.serves_food === true ? "Comida y bebida" : null,
+    ].filter(Boolean);
+  }
+
+  // What the page says about playing there: the cost, the house rules and the first games of its «Juegos de la
+  // casa», each only when the place wrote it. Null when the server sent no play (nobody plays there, places to
+  // play are not open to everyone yet, or a backend before 074).
+  function playFacts(play) {
+    if (!play) return null;
+    var clean = function (value) { return typeof value === "string" && value.trim() ? value.trim() : null; };
+    var games = (play.library || []).filter(function (game) { return game && clean(game.name); })
+      .map(function (game) { return { name: clean(game.name), note: clean(game.note) }; });
+    return {
+      fee: clean(play.fee_note),
+      rules: clean(play.house_rules),
+      games: games,
+      count: Math.max(Number(play.library_count) || 0, games.length),
+    };
+  }
+
+  // «Para mayores de 18 años · Organiza: Dados y Meeples», under every event: the business hosts it, not Meeplo.
+  function organiserLine(storeName) {
+    return "Para mayores de 18 años · Organiza: " + storeName;
+  }
+
   return {
+    venueKindLabel: venueKindLabel,
+    verifiedLabel: verifiedLabel,
+    sellsGames: sellsGames,
+    placeFacts: placeFacts,
+    playFacts: playFacts,
+    organiserLine: organiserLine,
     parseSlug: parseSlug,
     pathSlug: pathSlug,
     pathRedirect: pathRedirect,
