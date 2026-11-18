@@ -60,12 +60,12 @@
     $("unavailable").hidden = state.kind !== "unavailable";
     $("generic").hidden = state.kind !== "generic";
     if (state.kind === "listing") fillListing(state.data);
+    else setRobots("noindex");
     showBanner();
   }
 
   function fillListing(bundle) {
     var listing = bundle.listing, seller = bundle.seller;
-    document.title = listing.title + " · Meeplo";
     $("title").textContent = listing.title;
     $("price").textContent = rules.formatPrice(listing.price_amount, listing.price_currency);
     fillPhotos(bundle.photos, listing.title);
@@ -74,6 +74,47 @@
     $("description").hidden = !listing.description;
     fillSeller(seller);
     fillPlaces(bundle.places);
+    fillSearchTags(bundle);
+  }
+
+  // ---- Search engines ----------------------------------------------------------------------------
+  // Google renders the page, so what is set here is what it indexes. The static HTML has no robots tag;
+  // a page with no listing to show (unavailable, generic) gets noindex instead.
+
+  function setRobots(content) {
+    var meta = document.querySelector('meta[name="robots"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "robots";
+      document.head.appendChild(meta);
+    }
+    meta.content = content;
+  }
+
+  function fillSearchTags(bundle) {
+    var listing = bundle.listing;
+    var id = rules.parseListingId(location.search);
+    document.title = rules.searchTitle(listing);
+    var description = document.querySelector('meta[name="description"]');
+    if (description) description.content = rules.searchDescription(listing);
+    var canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = rules.canonicalURL(id);
+    var photoURLs = (bundle.photos || []).map(function (photo) {
+      return rules.photoURL(backend.url, photo.storage_path || photo.card_path);
+    });
+    var script = document.getElementById("structured-data");
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = "structured-data";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(rules.structuredData(listing, id, photoURLs));
   }
 
   function fillPhotos(photos, title) {
