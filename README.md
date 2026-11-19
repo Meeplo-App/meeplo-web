@@ -74,7 +74,7 @@ menu, «Buscar juegos», and the hero, «Ver juegos en venta») and from every l
 - **Data:** one call per load to the Supabase RPC `browse_catalog_page` (Meeplo-iOS migration 081) with the publishable
   key, read-only, by `browse_listing_page`'s rule: a card always opens. It deploys only once 081 is in production.
 - **Google:** the catalog's pages are indexable, each with its own canonical address (`/buscar/`, `/buscar/?pagina=2`),
-  title «Juegos de mesa usados en venta en México · Meeplo» and a schema.org `ItemList` of its cards. A search is
+  title «Juegos de mesa en venta en México, usados y sellados · Meeplo» and a schema.org `ItemList` of its cards. A search is
   `noindex, follow` with the catalog as its canonical address.
 - `assets/catalog-rules.js` — pure rules (the address, paging, titles, the card's text, structured data), tested with
   `node --test`; `assets/catalog.js` — the page; `assets/catalog.css` — its styles, on top of `listing.css`.

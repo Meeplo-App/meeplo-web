@@ -56,10 +56,11 @@
 
   function pageSuffix(page) { return page > 1 ? " · página " + page : ""; }
 
-  // "Juegos de mesa usados en venta en México · Meeplo", "«Catan»: juegos usados · Meeplo", with " · página N".
+  // "Juegos de mesa en venta en México, usados y sellados · Meeplo", "«Catan»: juegos de mesa en venta · Meeplo",
+  // with " · página N".
   function documentTitle(state) {
-    if (state.query) return "«" + state.query + "»: juegos de mesa usados" + pageSuffix(state.page) + " · Meeplo";
-    return "Juegos de mesa usados en venta en México" + pageSuffix(state.page) + " · Meeplo";
+    if (state.query) return "«" + state.query + "»: juegos de mesa en venta" + pageSuffix(state.page) + " · Meeplo";
+    return "Juegos de mesa en venta en México, usados y sellados" + pageSuffix(state.page) + " · Meeplo";
   }
 
   // "1 juego", "24 juegos", "1,250 juegos".
@@ -106,7 +107,7 @@
     return {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: state.query ? "Juegos de mesa usados: " + state.query : "Juegos de mesa usados en venta en México",
+      name: state.query ? "Juegos de mesa en venta: " + state.query : "Juegos de mesa en venta en México, usados y sellados",
       url: canonicalURL(state),
       numberOfItems: items.length,
       itemListElement: items.map(function (item, index) {
