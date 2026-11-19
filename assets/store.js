@@ -1,6 +1,8 @@
 // The public store page: reads one store through browse_store_page and renders it read-only. Every account
 // action opens the download sheet; nothing here writes or navigates inside Meeplo. The store's own website,
-// Instagram and a maps search for its address are the only links out.
+// Instagram, menu, its map page (or a maps search for its address) are the only links out. Since the legal texts
+// 1.4 (P154) the page is indexable: it sets its title, description, canonical address and structured data once
+// the store loads, and noindex when there is no store to show.
 (function () {
   "use strict";
 
@@ -35,11 +37,17 @@
   var slug = rules.parseSlug(location.search);
   var $ = function (id) { return document.getElementById(id); };
 
+  // ?env=staging|local switch the backend only on localhost. With env=local, ?port= picks another local stack's API
+  // port (a UI-test lane's, 55321 and up), as on /buscar/ and /lugares/.
   function chooseBackend() {
     var isLocalHost = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-    var env = new URLSearchParams(location.search).get("env");
-    if (isLocalHost && env && BACKENDS[env]) return BACKENDS[env];
-    return BACKENDS.production;
+    var params = new URLSearchParams(location.search);
+    var env = params.get("env");
+    if (!isLocalHost || !env || !BACKENDS[env]) return BACKENDS.production;
+    var chosen = BACKENDS[env];
+    var port = params.get("port");
+    if (env === "local" && /^\d{4,5}$/.test(port || "")) chosen = { url: "http://127.0.0.1:" + port, key: chosen.key };
+    return chosen;
   }
 
   // ---- Data --------------------------------------------------------------------------------------
@@ -77,16 +85,18 @@
     $("unavailable").hidden = state.kind !== "unavailable";
     $("generic").hidden = state.kind !== "generic";
     if (state.kind === "store") fillStore(state.data);
+    else setMeta("name", "robots", "noindex");
     showBanner();
   }
 
   function fillStore(page) {
     var store = page.store;
-    document.title = store.name + " · Meeplo";
+    fillSearchTags(page);
     fillCover(store);
-    fillVisit(store);
+    fillVisit(store, page.play);
     fillFacts(rules.placeFacts(store, page.play));
     fillPhotos(store);
+    fillGallery(rules.galleryPhotos(page.play), store);
     fillPlay(rules.playFacts(page.play));
     fillEvents(page.events || [], page.event_count || 0, store);
     // A place that does not sell has nothing «En venta» (the server sends no listings): no section, as the apps
@@ -126,7 +136,43 @@
     }
   }
 
-  function fillVisit(store) {
+  // ---- Search engines ----------------------------------------------------------------------------
+  // Google renders the page, so what is set here is what it indexes. The static HTML has no robots tag; a page
+  // with no store to show (unavailable, generic) gets noindex instead (render).
+
+  function fillSearchTags(page) {
+    var store = page.store;
+    document.title = rules.searchTitle(store);
+    var description = rules.searchDescription(store, page.play);
+    setMeta("name", "description", description);
+    setMeta("property", "og:title", store.name + " · Meeplo");
+    setMeta("property", "og:description", description);
+    setMeta("property", "og:url", rules.canonicalURL(slug));
+    var link = document.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.appendChild(link); }
+    link.href = rules.canonicalURL(slug);
+    var photos = [store.cover_photo_path].concat(store.photos || [])
+      .concat(rules.galleryPhotos(page.play).map(function (photo) { return photo.path; }))
+      .filter(Boolean)
+      .map(function (path) { return rules.storePhotoURL(backend.url, path); });
+    var logo = store.logo_path ? rules.storePhotoURL(backend.url, store.logo_path) : null;
+    var script = document.getElementById("structured-data");
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = "structured-data";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(rules.structuredData(store, page.play, slug, photos, logo));
+  }
+
+  function setMeta(attribute, name, content) {
+    var meta = document.querySelector("meta[" + attribute + '="' + name + '"]');
+    if (!meta) { meta = document.createElement("meta"); meta.setAttribute(attribute, name); document.head.appendChild(meta); }
+    meta.content = content;
+  }
+
+  function fillVisit(store, play) {
     var status = $("status");
     if (store.is_online) {
       status.textContent = "Tienda en línea";
@@ -145,6 +191,10 @@
     if (store.address) {
       links.appendChild(link("Cómo llegar", rules.mapsURL(platform, store.name, store.address)));
     }
+    var reviews = rules.reviewsURL(platform, store);
+    if (reviews) links.appendChild(link("Ver reseñas en mapas", reviews));
+    var menu = rules.menuURL(play);
+    if (menu) links.appendChild(link("Ver menú", menu));
     if (store.website) links.appendChild(link("Sitio web", store.website));
     if (store.instagram) links.appendChild(link("Instagram @" + store.instagram, rules.instagramURL(store.instagram)));
     links.hidden = !links.children.length;
@@ -194,6 +244,43 @@
       li.appendChild(img); list.appendChild(li);
     });
     list.hidden = !list.children.length;
+  }
+
+  // The gallery of a place where people play: its photos, newest first, each with its label, and chips that
+  // narrow them to one label, as on the apps' page. Nothing for a place without one.
+  function fillGallery(photos, store) {
+    var block = $("gallery-block");
+    block.hidden = !photos.length;
+    if (!photos.length) return;
+    var list = $("gallery");
+    list.textContent = "";
+    photos.forEach(function (photo, index) {
+      var li = document.createElement("li");
+      li.setAttribute("data-kind", photo.kind);
+      var img = document.createElement("img");
+      img.src = rules.storePhotoURL(backend.url, photo.path);
+      img.alt = rules.galleryLabel(photo.kind) + ": foto " + (index + 1) + " de " + store.name;
+      img.loading = "lazy";
+      li.appendChild(img);
+      li.appendChild(text("span", "label", rules.galleryLabel(photo.kind)));
+      list.appendChild(li);
+    });
+    var chips = $("gallery-chips");
+    chips.textContent = "";
+    rules.galleryChips(photos).forEach(function (chip, index) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.textContent = chip.label;
+      button.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+      button.addEventListener("click", function () {
+        chips.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", b === button ? "true" : "false"); });
+        list.querySelectorAll("li").forEach(function (li) {
+          li.hidden = chip.kind !== null && li.getAttribute("data-kind") !== chip.kind;
+        });
+      });
+      chips.appendChild(button);
+    });
+    chips.hidden = !chips.children.length;
   }
 
   // «Para jugar aquí»: what playing costs, the house rules and the first of its «Juegos de la casa». Nothing for

@@ -226,12 +226,145 @@
     };
   }
 
+  // ---- The gallery, the menu and the map (P150, migration 082) ---------------------------------------
+
+  // The labels of a place's gallery, as the apps' chips say them, in this order.
+  var GALLERY_KINDS = [
+    { kind: "place", label: "El lugar" },
+    { kind: "events", label: "Eventos" },
+    { kind: "activities", label: "Actividades" },
+  ];
+
+  // The gallery's photos the server sent (newest first), each {path, kind}; a kind this page does not know reads
+  // «El lugar». Empty when there is none (nobody plays there, places to play not open, a backend before 082).
+  function galleryPhotos(play) {
+    var known = GALLERY_KINDS.map(function (k) { return k.kind; });
+    return ((play && play.gallery) || []).filter(function (photo) {
+      return photo && typeof photo.path === "string" && photo.path;
+    }).map(function (photo) {
+      return { path: photo.path, kind: known.indexOf(photo.kind) === -1 ? "place" : photo.kind };
+    });
+  }
+
+  // The chips over the gallery: «Todas» and each label that has a photo, in the apps' order; none for a gallery
+  // with photos of one kind only (nothing to choose).
+  function galleryChips(photos) {
+    var kinds = GALLERY_KINDS.filter(function (k) {
+      return photos.some(function (photo) { return photo.kind === k.kind; });
+    });
+    if (kinds.length < 2) return [];
+    return [{ kind: null, label: "Todas" }].concat(kinds);
+  }
+
+  function galleryLabel(kind) {
+    var found = GALLERY_KINDS.filter(function (k) { return k.kind === kind; })[0];
+    return found ? found.label : GALLERY_KINDS[0].label;
+  }
+
+  // «Ver menú»: the place's https link while it serves food (the server sends it only then); null otherwise.
+  function menuURL(play) {
+    var url = play && play.menu_url;
+    return typeof url === "string" && /^https:\/\/[^\s]+$/.test(url) ? url : null;
+  }
+
+  // «Ver reseñas en mapas»: the place's own Google Maps link when it pasted one, else the maps search for its
+  // name and address (as «Cómo llegar»). Null for an online store, which has no door.
+  function reviewsURL(platform, store) {
+    if (!store || store.is_online || !store.address) return null;
+    var own = store.maps_url;
+    if (typeof own === "string" && /^https:\/\/((www\.)?google\.com(\.mx)?\/maps|maps\.google\.com(\.mx)?|maps\.app\.goo\.gl\/|goo\.gl\/maps\/|g\.page\/)/.test(own)) {
+      return own;
+    }
+    return mapsURL(platform, store.name, store.address);
+  }
+
+  // ---- Search engines (P154) ------------------------------------------------------------------------
+
+  var SITE = "https://meeplo.com.mx";
+
+  // The address Google keeps: the query form. The shared /t/<slug> is GitHub Pages' 404 page, which redirects.
+  function canonicalURL(slug) {
+    return SITE + "/t/?s=" + slug;
+  }
+
+  // What the place is, in a search result's words: "Espacio de juegos en CDMX", "Tienda de juegos de mesa en
+  // Puebla", "Tienda de juegos de mesa en línea".
+  function placeSummary(store) {
+    if (venueKind(store) === "play_space") return "Espacio de juegos" + (store.city ? " en " + store.city : "");
+    if (store.is_online) return "Tienda de juegos de mesa en línea";
+    return "Tienda de juegos de mesa" + (store.city ? " en " + store.city : "");
+  }
+
+  // "Dados y Meeples · Espacio de juegos en CDMX · Meeplo".
+  function searchTitle(store) {
+    return store.name + " · " + placeSummary(store) + " · Meeplo";
+  }
+
+  // "Espacio de juegos en CDMX: se juega aquí, vende juegos, comida y bebida. <the description>…", at most 160
+  // characters.
+  function searchDescription(store, play) {
+    var facts = placeFacts(store, play).map(function (fact) { return fact.toLowerCase(); });
+    var text = placeSummary(store) + (facts.length ? ": " + facts.join(", ") : "") + ".";
+    var description = (store.description || "").replace(/\s+/g, " ").trim();
+    text += description ? " " + description : " Horario, eventos y juegos en Meeplo.";
+    return text.length <= 160 ? text : text.slice(0, 159).replace(/\s+\S*$/, "") + "…";
+  }
+
+  var SCHEMA_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+  // schema.org data for the place: a Store, an EntertainmentBusiness (a game space) or an OnlineStore, with what
+  // its page shows. Never its WhatsApp, its coordinates or who runs it. `photoURLs` are absolute addresses.
+  function structuredData(store, play, slug, photoURLs, logoURL) {
+    var type = store.is_online ? "OnlineStore" : venueKind(store) === "play_space" ? "EntertainmentBusiness" : "Store";
+    var data = {
+      "@context": "https://schema.org",
+      "@type": type,
+      name: store.name,
+      url: canonicalURL(slug),
+    };
+    if (store.description) data.description = store.description;
+    if (photoURLs && photoURLs.length) data.image = photoURLs;
+    if (logoURL) data.logo = logoURL;
+    if (!store.is_online && store.address) {
+      data.address = { "@type": "PostalAddress", streetAddress: store.address, addressCountry: "MX" };
+      if (store.city) data.address.addressLocality = store.city;
+      var hours = (store.hours || []).filter(function (d) { return d && d.day >= 1 && d.day <= 7; });
+      if (hours.length) {
+        data.openingHoursSpecification = hours.map(function (d) {
+          return {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: "https://schema.org/" + SCHEMA_DAYS[d.day - 1],
+            opens: clock(minutes(d.opens)),
+            closes: d.closes === "24:00" ? "23:59" : clock(minutes(d.closes)),
+          };
+        });
+      }
+      var map = reviewsURL("other", store);
+      if (map) data.hasMap = map;
+    }
+    var sameAs = [store.website, store.instagram ? instagramURL(store.instagram) : null].filter(Boolean);
+    if (sameAs.length) data.sameAs = sameAs;
+    var menu = menuURL(play);
+    if (menu) data.hasMenu = menu;
+    return data;
+  }
+
   // «Para mayores de 18 años · Organiza: Dados y Meeples», under every event: the business hosts it, not Meeplo.
   function organiserLine(storeName) {
     return "Para mayores de 18 años · Organiza: " + storeName;
   }
 
   return {
+    galleryPhotos: galleryPhotos,
+    galleryChips: galleryChips,
+    galleryLabel: galleryLabel,
+    menuURL: menuURL,
+    reviewsURL: reviewsURL,
+    canonicalURL: canonicalURL,
+    placeSummary: placeSummary,
+    searchTitle: searchTitle,
+    searchDescription: searchDescription,
+    structuredData: structuredData,
     venueKindLabel: venueKindLabel,
     verifiedLabel: verifiedLabel,
     sellsGames: sellsGames,

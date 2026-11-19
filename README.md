@@ -1,7 +1,7 @@
 # meeplo-web
 
 The site at `https://meeplo.com.mx`: the landing page, the legal pages, `.well-known/` (Universal Links
-and Android App Links), the public listing page and the public store page. Plain HTML, CSS and JavaScript, no build step,
+and Android App Links), the public listing page, the public store page and the directory of places. Plain HTML, CSS and JavaScript, no build step,
 deployed by GitHub Pages from `main`.
 
 ## The public listing page — `/l/?id=<uuid>`
@@ -51,7 +51,8 @@ The listing page can appear in Google's results. Google runs the page's JavaScri
   The page still shows their username to visitors, as before.
 
 The rules are in `assets/listing-rules.js` (`searchTitle`, `searchDescription`, `canonicalURL`, `structuredData`)
-and tested with the others. The store page (`/t/`) and `404.html` keep `noindex`.
+and tested with the others. `404.html` keeps `noindex`; the store page (`/t/`) is indexable since the legal texts 1.4
+(see its section).
 
 The sitemap is Meeplo-iOS's `sitemap` Edge Function, which lists every listing the page shows when a search engine
 asks; `robots.txt` names its production address (Google accepts a sitemap on another host that way). The owner's step is Google Search Console: verify `meeplo.com.mx`,
@@ -123,5 +124,46 @@ python3 -m http.server 8080
 open "http://localhost:8080/t/?s=<slug>&env=staging"
 ```
 
+**Gallery, menu and map; search engines (P154, Meeplo-iOS migration 082, with the legal texts 1.4).** For a place where
+people play, `play` brings its `gallery` (each photo's path and label, newest first) and its `menu_url` (only while it
+serves food), and the store its `maps_url` (its own Google Maps link, only with a door). The page shows the gallery
+under «Fotos» with chips «Todas» · «El lugar» · «Eventos» · «Actividades» (only the labels it has, and none for a
+single one), and beside «Cómo llegar» the links «Ver reseñas en mapas» (its own link, else the same maps search) and
+«Ver menú». A backend before 082 sends none of it and the page shows what it did before.
+
+The page is **indexable**: the static HTML has no robots tag, and once the store loads `assets/store.js` sets the title
+(«Dados y Meeples · Espacio de juegos en CDMX · Meeplo»; «Tienda de juegos de mesa en Puebla»; «… en línea»), the
+description (the kind, city and facts, then the store's description, cut at 160 characters), the canonical address
+`https://meeplo.com.mx/t/?s=<slug>` (the shared `/t/<slug>` is GitHub Pages' 404 page, which answers 404 before it
+redirects) and schema.org data: `EntertainmentBusiness` for a game space, `Store` for a shop with a door, `OnlineStore`
+online, with the address, hours, photos, logo, website and Instagram (`sameAs`), map and menu — never the WhatsApp,
+coordinates or who runs it. *Not available* and *generic* get `noindex`. The rules are in `assets/store-rules.js`
+(`searchTitle`, `searchDescription`, `canonicalURL`, `structuredData`, `galleryPhotos`, `galleryChips`, `menuURL`,
+`reviewsURL`). The page links to `/lugares/`. **Merge only with the legal texts 1.4 published and 082 in production.**
+
 **It goes live only once migration 069 is promoted to production**: merging this repository publishes the
 page, and against a production without 069 every store link would show the generic page.
+
+## The directory of places — `/lugares/`
+
+Every place a visitor without the app can open (P154), so search engines reach every place's page from the site, and a
+visitor finds where to buy or where to play. Linked from the home page (the menu, «Lugares», and «Ver tiendas y dónde
+jugar») and from every place's page.
+
+- **What shows:** 24 places per page, by name, each a card — its card photo (else its logo, else its initial on its
+  colour), its name, «Espacio de juegos · CDMX», «Tienda · Puebla» or «Tienda en línea», and the facts chips as its own
+  page says them («Se juega aquí», «Vende juegos», «Comida y bebida»; none for a shop where nobody plays) — that links
+  to `/t/?s=<slug>`. A search box (`?q=`) matches the name or the city, chips choose «Todos», «Tiendas» or «Espacios de
+  juegos» (`?tipo=tiendas|espacios`), «Anterior» and «Siguiente» (`?pagina=N`). Never the address, WhatsApp or owner.
+- **States:** the cards; «No encontramos ese lugar.» for a search with no match (or «Todavía no hay lugares aquí.»);
+  «No pudimos cargar los lugares.» when the request fails (and `noindex`).
+- **Data:** one call per load to the Supabase RPC `browse_places_page` (Meeplo-iOS migration 082) with the publishable
+  key, read-only, by `browse_store_page`'s rule: a card always opens; a game space only while game spaces are open to
+  everyone. The sitemap Edge Function reads the same function for the places' addresses.
+- **Google:** the directory's pages and each kind's are indexable, each with its own canonical address and title
+  («Tiendas de juegos de mesa y espacios para jugar en México · Meeplo», «Espacios de juegos de mesa: dónde jugar en
+  México · Meeplo») and a schema.org `ItemList` of its cards. A search is `noindex, follow`.
+- `assets/places-rules.js` — pure rules, tested with `node --test`; `assets/places.js` — the page; `assets/places.css` —
+  its styles, on top of `listing.css` and `catalog.css`.
+- **Trying it locally:** `?env=staging` or `?env=local` (with `&port=55321` for a UI-test lane), only on localhost; the
+  store page takes the same parameters.

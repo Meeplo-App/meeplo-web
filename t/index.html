@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex">
   <title>Una tienda en Meeplo</title>
   <meta name="description" content="Juegos de mesa y eventos de una tienda en Meeplo. Ábrela en la app.">
   <meta name="apple-itunes-app" content="app-id=6824672527">
@@ -72,6 +71,12 @@
 
       <ul id="photos" class="photos shop-photos" aria-label="Fotos de la tienda" hidden></ul>
 
+      <section id="gallery-block" class="block" aria-labelledby="gallery-title" hidden>
+        <h2 id="gallery-title" class="block-title">Fotos</h2>
+        <div id="gallery-chips" class="chips" role="group" aria-label="Mostrar fotos de" hidden></div>
+        <ul id="gallery" class="gallery"></ul>
+      </section>
+
       <section id="play-block" class="block" aria-labelledby="play-title" hidden>
         <h2 id="play-title" class="block-title">Para jugar aquí</h2>
         <dl id="play-facts" class="facts">
@@ -126,6 +131,8 @@
       </div>
     </section>
 
+    <p class="more-places"><a href="/lugares/">Ver más tiendas y espacios de juegos <span aria-hidden="true">→</span></a></p>
+
     <section class="steps" aria-label="Cómo funciona Meeplo">
       <div class="step"><span class="number" aria-hidden="true">01</span><div><h2>Encuentra.</h2><p>Explora tiendas y juegos cerca de ti.</p></div></div>
       <div class="step"><span class="number" aria-hidden="true">02</span><div><h2>Conversa.</h2><p>Conversa con quien vende.</p></div></div>
@@ -134,7 +141,7 @@
   </main>
   <footer>
     <p>Meeplo · Más partidas. Nuevas historias.<br>iOS y Android · México · 18+</p>
-    <nav aria-label="Información legal"><a href="/privacidad/">Privacidad</a><a href="/terminos/">Términos</a><a href="/soporte/">Soporte</a></nav>
+    <nav aria-label="Información legal"><a href="/lugares/">Lugares</a><a href="/privacidad/">Privacidad</a><a href="/terminos/">Términos</a><a href="/soporte/">Soporte</a></nav>
   </footer>
 
   <div id="banner" class="banner" hidden role="region" aria-label="Descargar Meeplo">

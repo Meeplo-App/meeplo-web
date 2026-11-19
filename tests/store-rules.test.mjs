@@ -151,3 +151,71 @@ test('playFacts lists the library games with their notes and counts them all', (
 test('every event names the business as its organiser', () => {
   assert.equal(rules.organiserLine('Dados y Meeples'), 'Para mayores de 18 años · Organiza: Dados y Meeples');
 });
+
+// ---- P150 on the web and P154 (migration 082) --------------------------------------------------------------
+
+const PLACE = {
+  slug: 'dados-y-meeples', name: 'Dados y Meeples', city: 'CDMX', address: 'Av. Juárez 10, Centro', is_online: false,
+  venue_kind: 'play_space', sells_games: true, description: 'Café con más de 300 juegos.',
+  hours: [{ day: 1, opens: '10:00', closes: '20:00' }, { day: 6, opens: '12:00', closes: '24:00' }],
+  website: 'https://dados.example', instagram: 'dadosmeeples', maps_url: null,
+};
+const PLAY = {
+  serves_food: true, menu_url: 'https://dados.example/menu',
+  gallery: [{ path: 'u/gallery-2.jpg', kind: 'events' }, { path: 'u/gallery-1.jpg', kind: 'place' }, { path: '', kind: 'place' }],
+};
+
+test('galleryPhotos keeps each photo with a path; an unknown label reads «El lugar»', () => {
+  assert.deepEqual(rules.galleryPhotos(PLAY), [{ path: 'u/gallery-2.jpg', kind: 'events' }, { path: 'u/gallery-1.jpg', kind: 'place' }]);
+  assert.deepEqual(rules.galleryPhotos({ gallery: [{ path: 'x.jpg', kind: 'other' }] }), [{ path: 'x.jpg', kind: 'place' }]);
+  assert.deepEqual(rules.galleryPhotos(null), []);
+});
+test('galleryChips: «Todas» and each label with a photo, in the apps\' order; none for one label', () => {
+  assert.deepEqual(rules.galleryChips(rules.galleryPhotos(PLAY)).map((c) => c.label), ['Todas', 'El lugar', 'Eventos']);
+  assert.deepEqual(rules.galleryChips([{ path: 'a', kind: 'activities' }]), []);
+  assert.equal(rules.galleryLabel('activities'), 'Actividades');
+});
+test('menuURL only for an https link', () => {
+  assert.equal(rules.menuURL(PLAY), 'https://dados.example/menu');
+  assert.equal(rules.menuURL({ menu_url: 'http://x.example' }), null);
+  assert.equal(rules.menuURL(null), null);
+});
+test('reviewsURL: the place\'s own Google Maps link, else the maps search; none online', () => {
+  assert.equal(rules.reviewsURL('android', { ...PLACE, maps_url: 'https://maps.app.goo.gl/Abc' }), 'https://maps.app.goo.gl/Abc');
+  assert.equal(rules.reviewsURL('ios', { ...PLACE, maps_url: 'https://evil.example/maps' }),
+    'https://maps.apple.com/?q=' + encodeURIComponent('Dados y Meeples, Av. Juárez 10, Centro'));
+  assert.equal(rules.reviewsURL('other', { ...PLACE, is_online: true, address: null }), null);
+});
+test('the search result: title and description by kind and city, at most 160 characters', () => {
+  assert.equal(rules.searchTitle(PLACE), 'Dados y Meeples · Espacio de juegos en CDMX · Meeplo');
+  assert.equal(rules.searchTitle({ ...PLACE, venue_kind: 'shop' }), 'Dados y Meeples · Tienda de juegos de mesa en CDMX · Meeplo');
+  assert.equal(rules.searchTitle({ ...PLACE, venue_kind: 'shop', is_online: true }), 'Dados y Meeples · Tienda de juegos de mesa en línea · Meeplo');
+  assert.equal(rules.searchDescription(PLACE, PLAY),
+    'Espacio de juegos en CDMX: se juega aquí, vende juegos, comida y bebida. Café con más de 300 juegos.');
+  assert.equal(rules.searchDescription({ ...PLACE, venue_kind: 'shop', description: null }, null),
+    'Tienda de juegos de mesa en CDMX. Horario, eventos y juegos en Meeplo.');
+  assert.ok(rules.searchDescription({ ...PLACE, description: 'palabra '.repeat(40) }, PLAY).length <= 160);
+});
+test('canonicalURL is the query form, which GitHub Pages serves with 200', () => {
+  assert.equal(rules.canonicalURL('dados-y-meeples'), 'https://meeplo.com.mx/t/?s=dados-y-meeples');
+});
+test('structuredData: a game space with its address, hours, links and menu, never its WhatsApp or position', () => {
+  const data = rules.structuredData({ ...PLACE, whatsapp: '+525512345678' }, PLAY, 'dados-y-meeples', ['https://x/p.jpg'], 'https://x/l.jpg');
+  assert.equal(data['@type'], 'EntertainmentBusiness');
+  assert.equal(data.url, 'https://meeplo.com.mx/t/?s=dados-y-meeples');
+  assert.deepEqual(data.address, { '@type': 'PostalAddress', streetAddress: 'Av. Juárez 10, Centro', addressCountry: 'MX', addressLocality: 'CDMX' });
+  assert.deepEqual(data.openingHoursSpecification.map((h) => [h.dayOfWeek, h.opens, h.closes]),
+    [['https://schema.org/Monday', '10:00', '20:00'], ['https://schema.org/Saturday', '12:00', '23:59']]);
+  assert.deepEqual(data.sameAs, ['https://dados.example', 'https://www.instagram.com/dadosmeeples/']);
+  assert.equal(data.hasMenu, 'https://dados.example/menu');
+  assert.ok(data.hasMap.startsWith('https://www.google.com/maps/search/'));
+  assert.ok(!/telephone|whatsapp|5512345678|geo|latitude/i.test(JSON.stringify(data)));
+});
+test('structuredData: a shop is a Store; an online one an OnlineStore with no address or hours', () => {
+  assert.equal(rules.structuredData({ ...PLACE, venue_kind: 'shop' }, null, 's', [], null)['@type'], 'Store');
+  const online = rules.structuredData({ ...PLACE, venue_kind: 'shop', is_online: true, address: null }, null, 's', [], null);
+  assert.equal(online['@type'], 'OnlineStore');
+  assert.equal(online.address, undefined);
+  assert.equal(online.openingHoursSpecification, undefined);
+  assert.equal(online.hasMap, undefined);
+});
