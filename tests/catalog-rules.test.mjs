@@ -50,9 +50,9 @@ test('robotsContent: only a search is noindex, and its links are still followed'
   assert.equal(rules.robotsContent({ query: 'catan', page: 1 }), 'noindex, follow');
 });
 test('documentTitle', () => {
-  assert.equal(rules.documentTitle({ query: '', page: 1 }), 'Juegos de mesa usados en venta en México · Meeplo');
-  assert.equal(rules.documentTitle({ query: '', page: 2 }), 'Juegos de mesa usados en venta en México · página 2 · Meeplo');
-  assert.equal(rules.documentTitle({ query: 'Catan', page: 1 }), '«Catan»: juegos de mesa usados · Meeplo');
+  assert.equal(rules.documentTitle({ query: '', page: 1 }), 'Juegos de mesa en venta en México, usados y sellados · Meeplo');
+  assert.equal(rules.documentTitle({ query: '', page: 2 }), 'Juegos de mesa en venta en México, usados y sellados · página 2 · Meeplo');
+  assert.equal(rules.documentTitle({ query: 'Catan', page: 1 }), '«Catan»: juegos de mesa en venta · Meeplo');
 });
 test('countText and summaryText', () => {
   assert.equal(rules.countText(1), '1 juego');
