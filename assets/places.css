@@ -1,0 +1,17 @@
+/* The public directory of places (/lugares/), on top of listing.css and catalog.css: the kind chips and a place's
+   card (its photo, or its logo or initial on its colour; its kind and city; the facts chips). */
+.kinds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.kinds a { min-height: 40px; display: inline-flex; align-items: center; padding: 6px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 600; }
+.kinds a[aria-current="page"] { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+.place .cover { --brand: #4a44c6; display: grid; place-items: center; }
+.place .cover.logo-only { background: #fff; border-bottom: 1px solid var(--line); }
+.place .cover.logo-only img { width: 46%; height: auto; aspect-ratio: 1; object-fit: contain; border-radius: 18px; }
+.place .cover.initial { background: var(--brand); color: #fff; font-size: 54px; font-weight: 800; letter-spacing: -1px; }
+.place .place-facts { list-style: none; margin: auto 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.place .place-facts li { padding: 3px 10px; border-radius: 999px; background: #efecff; font-size: 12px; font-weight: 600; }
+
+@media (max-width: 760px) {
+  .place .cover.initial { font-size: 40px; }
+  .place .place-facts li { font-size: 11px; padding: 3px 8px; }
+}
