@@ -167,3 +167,30 @@ jugar») and from every place's page.
   its styles, on top of `listing.css` and `catalog.css`.
 - **Trying it locally:** `?env=staging` or `?env=local` (with `&port=55321` for a UI-test lane), only on localhost; the
   store page takes the same parameters.
+
+## Link previews — `worker/` (not deployed)
+
+A shared listing or store link shows its own photo, title and price in WhatsApp, iMessage, Telegram, Facebook and X
+(Meeplo-iOS, *Public Listing Page Proposal/Link Previews.md*). Those apps read the `og:` tags of the HTML and never run
+JavaScript, and GitHub Pages serves one static page for every `?id=`, so without this every preview is the mascot.
+
+- **How:** a Cloudflare Worker in front of GitHub Pages, on `meeplo.com.mx/l/*` and `meeplo.com.mx/t/*` only. It
+  fetches the page from GitHub Pages, reads the listing (`browse_listing_page`) or the store (`browse_store_page`) with
+  the publishable key, and rewrites `<title>`, `description`, `og:*`, `twitter:*`, `og:url` and the canonical link with
+  `HTMLRewriter`. The words come from `listing-rules.js` and `store-rules.js`, so the preview, the page and Google
+  agree. The image is the listing's first photo as its 640 px card (about 60 KB), or the store's cover, else its logo.
+  Never the seller, their places or their distance.
+- **When anything fails** (an unknown, sold or hidden listing or store, a timeout of 1.5 s, an error) the page goes out
+  exactly as GitHub Pages served it. Every visitor gets the same HTML; nothing depends on the user agent.
+- **Old link forms:** `/l/<uuid>` and `/t/<slug>` get a 301 to their query form, the address 404.html's script sends a
+  browser to. Today they answer 404, so a store's shared link or QR has no preview at all.
+- **Cache:** a rewritten page is kept 5 minutes at the edge; its `content-encoding` is dropped (the body is already
+  decoded; keeping it made the cached copy come back compressed twice) and Cloudflare compresses it again.
+- `worker/preview.js` — the pure part (which page a request asks for, the tags, the edits), tested with `node --test`
+  (`tests/preview.test.mjs`); `worker/worker.js` — the Worker; `worker/wrangler.toml` — its routes and production's
+  publishable key.
+- **Trying it locally:** `npx wrangler@4 dev --config worker/wrangler.toml --env dev`, then open
+  `http://127.0.0.1:8787/l/?id=<uuid>`: it serves the live site through the Worker, against production.
+- **Deploying (the owner):** only after the legal texts 1.6 are published and meeplo.com.mx's nameservers are
+  Cloudflare's: `npx wrangler@4 deploy --config worker/wrangler.toml`. Undo with `npx wrangler@4 delete`, or by removing
+  the two routes.
