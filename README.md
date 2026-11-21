@@ -168,7 +168,7 @@ jugar») and from every place's page.
 - **Trying it locally:** `?env=staging` or `?env=local` (with `&port=55321` for a UI-test lane), only on localhost; the
   store page takes the same parameters.
 
-## Link previews — `worker/` (not deployed)
+## Link previews — `worker/` (live since 2026-11-21)
 
 A shared listing or store link shows its own photo, title and price in WhatsApp, iMessage, Telegram, Facebook and X
 (Meeplo-iOS, *Public Listing Page Proposal/Link Previews.md*). Those apps read the `og:` tags of the HTML and never run
@@ -191,6 +191,14 @@ JavaScript, and GitHub Pages serves one static page for every `?id=`, so without
   publishable key.
 - **Trying it locally:** `npx wrangler@4 dev --config worker/wrangler.toml --env dev`, then open
   `http://127.0.0.1:8787/l/?id=<uuid>`: it serves the live site through the Worker, against production.
-- **Deploying (the owner):** only after the legal texts 1.6 are published and meeplo.com.mx's nameservers are
-  Cloudflare's: `npx wrangler@4 deploy --config worker/wrangler.toml`. Undo with `npx wrangler@4 delete`, or by removing
-  the two routes.
+- **Live:** meeplo.com.mx's DNS is on Cloudflare since 2026-11-21 (the site itself stays on GitHub Pages), and the Worker
+  `meeplo-link-previews` was first deployed that day from `e1aa639`. How it was set up, what was checked and what to keep
+  (SSL/TLS **Full**, mail records DNS only, *Email Address Obfuscation* and *Rocket Loader* off) is in Meeplo-iOS,
+  *Link Previews.md*, section *Live*.
+- **Deploying again** (after a change to `worker/`, `listing-rules.js` or `store-rules.js`): from a clean checkout of
+  `main`, `node --test`, then `npx wrangler@4 deploy --config worker/wrangler.toml` (Wrangler logs in to the owner's
+  Cloudflare account by OAuth; the authorization link expires in about two minutes). Undo with `npx wrangler@4 delete`,
+  or by removing the two routes in Cloudflare.
+- **Testing a preview:** a network that cached meeplo.com.mx's old delegation (up to 24 hours after a DNS change)
+  reaches GitHub Pages directly and sees the mascot. opengraph.xyz, Facebook's Sharing Debugger or Telegram build the
+  preview on their own servers. WhatsApp builds it on the sender's phone and keeps the first one it saw for each link.
