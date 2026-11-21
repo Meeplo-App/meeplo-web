@@ -1,0 +1,27 @@
+# Link previews for shared listings and stores (worker.js). Deployed by the owner with
+#   npx wrangler deploy --config worker/wrangler.toml
+# once meeplo.com.mx's nameservers are Cloudflare's (Meeplo-iOS, "Link Previews.md", the owner's steps).
+name = "meeplo-link-previews"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = false
+
+# Only these two paths run the Worker; every other page goes straight to GitHub Pages through Cloudflare.
+routes = [
+  { pattern = "meeplo.com.mx/l/*", zone_name = "meeplo.com.mx" },
+  { pattern = "meeplo.com.mx/t/*", zone_name = "meeplo.com.mx" },
+]
+
+# Production's address and publishable key, the same the pages use (assets/listing.js): public by design.
+[vars]
+SUPABASE_URL = "https://szulqqeyuxjqpynvggvy.supabase.co"
+SUPABASE_KEY = "sb_publishable_6C523n0LIzhj56sVMvh5NA_y_7yM41w"
+
+# `npx wrangler dev --config worker/wrangler.toml --env dev` serves it on localhost against the live site.
+[env.dev]
+workers_dev = true
+routes = []
+[env.dev.vars]
+SUPABASE_URL = "https://szulqqeyuxjqpynvggvy.supabase.co"
+SUPABASE_KEY = "sb_publishable_6C523n0LIzhj56sVMvh5NA_y_7yM41w"
+ORIGIN = "https://meeplo.com.mx"
