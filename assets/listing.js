@@ -141,7 +141,8 @@
 
   function fillFacts(listing) {
     var facts = [];
-    facts.push(["Estado", rules.labels.condition[listing.condition] || listing.condition]);
+    facts.push(["Estado", rules.conditionLabel(listing)]);
+    if (listing.condition === "sealed" && listing.box_note) facts.push(["Detalles de la caja", listing.box_note]);
     if (listing.completeness) facts.push(["Completo", listing.completeness]);
     facts.push(["Categoría", rules.labels.category[listing.category] || listing.category]);
     var languages = (listing.languages || []).map(function (l) { return rules.labels.language[l] || l; });
