@@ -103,9 +103,16 @@
     return listing.title + " " + state + " · " + formatPrice(listing.price_amount, listing.price_currency) + " · Meeplo";
   }
 
+  // The listing's state as the app names it: "Buen estado"; a sealed copy with a note on its box reads
+  // "Sellado, caja con detalles".
+  function conditionLabel(listing) {
+    if (listing.condition === "sealed" && listing.box_note) return "Sellado, caja con detalles";
+    return labels.condition[listing.condition] || listing.condition || "";
+  }
+
   // "Catan, buen estado, por $650 MXN en Meeplo. <the description>…", at most 160 characters.
   function searchDescription(listing) {
-    var condition = (labels.condition[listing.condition] || "").toLowerCase();
+    var condition = conditionLabel(listing).toLowerCase();
     var price = formatPrice(listing.price_amount, listing.price_currency);
     if (!listing.price_currency || listing.price_currency === "MXN") price += " MXN";
     var text = listing.title + (condition ? ", " + condition + "," : "") + " por " + price + " en Meeplo.";
@@ -165,6 +172,7 @@
     storeURLs: storeURLs,
     canonicalURL: canonicalURL,
     searchTitle: searchTitle,
+    conditionLabel: conditionLabel,
     searchDescription: searchDescription,
     structuredData: structuredData,
     labels: labels,

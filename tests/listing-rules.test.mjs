@@ -91,3 +91,15 @@ test('structuredData is a Product with an in-stock Offer and never the seller', 
   assert.equal(rules.structuredData({ ...LISTING, condition: 'sealed' }, UUID, []).image, undefined);
   assert.ok(!JSON.stringify(data).includes('seller'));
 });
+
+test('a sealed copy with a note on its box is named so; the note alone on another state is not', () => {
+  const boxed = { ...LISTING, condition: 'sealed', box_note: 'Esquina golpeada', description: null };
+  assert.equal(rules.conditionLabel(boxed), 'Sellado, caja con detalles');
+  assert.equal(rules.conditionLabel({ ...LISTING, condition: 'sealed' }), 'Sellado');
+  assert.equal(rules.conditionLabel({ ...LISTING, box_note: 'Esquina golpeada' }), 'Buen estado');
+  assert.equal(rules.conditionLabel({ ...LISTING, box_note: null }), 'Buen estado');
+  assert.equal(rules.searchDescription(boxed), 'Catan, sellado, caja con detalles, por $650 MXN en Meeplo.');
+  // Still a new copy for Google, and still «sellado» in the title.
+  assert.equal(rules.structuredData(boxed, UUID, []).offers.itemCondition, 'https://schema.org/NewCondition');
+  assert.equal(rules.searchTitle(boxed), 'Catan sellado · $650 · Meeplo');
+});

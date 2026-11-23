@@ -33,7 +33,12 @@
   function chooseBackend() {
     var isLocalHost = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     var env = new URLSearchParams(location.search).get("env");
-    if (isLocalHost && env && BACKENDS[env]) return BACKENDS[env];
+    if (isLocalHost && env && BACKENDS[env]) {
+      // With env=local, ?port= picks another local stack's API port (a UI-test lane's, 55321 and up), as on /buscar/.
+      var port = new URLSearchParams(location.search).get("port");
+      if (env === "local" && /^\d{4,5}$/.test(port || "")) return { url: "http://127.0.0.1:" + port, key: BACKENDS.local.key };
+      return BACKENDS[env];
+    }
     return BACKENDS.production;
   }
 
@@ -141,7 +146,8 @@
 
   function fillFacts(listing) {
     var facts = [];
-    facts.push(["Estado", rules.labels.condition[listing.condition] || listing.condition]);
+    facts.push(["Estado", rules.conditionLabel(listing)]);
+    if (listing.condition === "sealed" && listing.box_note) facts.push(["Detalles de la caja", listing.box_note]);
     if (listing.completeness) facts.push(["Completo", listing.completeness]);
     facts.push(["Categoría", rules.labels.category[listing.category] || listing.category]);
     var languages = (listing.languages || []).map(function (l) { return rules.labels.language[l] || l; });

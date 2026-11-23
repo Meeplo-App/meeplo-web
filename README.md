@@ -12,7 +12,7 @@ listing **read-only**, in one of three states:
 
 | State | When | What shows |
 | --- | --- | --- |
-| Listing | the server answers | photos, title, price, condition, description, the seller's name, badges and rating, the meeting places' names |
+| Listing | the server answers | photos, title, price, condition (a sealed copy with `box_note` reads «Sellado, caja con detalles», with «Detalles de la caja» under it; Meeplo-iOS migration 086), description, the seller's name, badges and rating, the meeting places' names |
 | Not available | held, sold, withdrawn, suspended seller, unknown id | "Este anuncio ya no está disponible." and the store buttons |
 | Generic | no id, a malformed id, or the request failed | the original page |
 
