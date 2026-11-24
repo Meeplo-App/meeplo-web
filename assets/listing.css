@@ -67,6 +67,10 @@ footer a { color: var(--muted); text-decoration: none; }
 .places-title, .about-title { margin: 22px 0 8px; font-size: 12px; letter-spacing: 1.6px; color: var(--purple); font-weight: 750; text-transform: uppercase; }
 .actions { display: flex; gap: 12px; margin-top: 24px; }
 .actions .store { flex: 1; justify-content: center; }
+.actions [hidden] { display: none; }
+/* «Preguntar a la tienda»: the secondary action under «Ver en la tienda» (P160) */
+.ask-store { display: block; margin: 12px auto 0; padding: 8px 12px; border: 0; background: none; color: var(--purple); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.ask-store[hidden] { display: none; }
 .heart { width: 52px; height: 52px; border-radius: 13px; border: 1px solid var(--line); background: var(--card); font-size: 22px; cursor: pointer; color: var(--purple); }
 
 /* The link to the catalog (/buscar/) */

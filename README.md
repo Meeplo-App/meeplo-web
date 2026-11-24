@@ -20,7 +20,17 @@ Every button that needs an account — *Enviar mensaje*, the heart, the seller �
 sheet**; nothing on the page navigates inside Meeplo. A sticky **banner** offers the App Store on iPhone
 and iPad, Google Play on Android (plus *Abrir en la app* through an `intent://` URL), both elsewhere.
 The page reads one listing per load through the Supabase RPC `browse_listing_page` with the publishable
-key, and never writes.
+key, and writes nothing but one anonymous count (below).
+
+**«Ver en la tienda»** (P160, Meeplo-iOS migration 088). A store's listing imported with the link to the product
+on its own site brings `listing.store_link`, which the server sends to a visitor without an account only while
+the flag `ver_en_tienda` is enabled at 100 %. With it, the actions read «Ver en la tienda» (a link to the store's
+page, `target="_blank" rel="noopener nofollow"`) and, under it, «Preguntar a la tienda» in place of *Enviar
+mensaje* (it opens the download sheet, as that did). A click also calls the RPC `open_store_link` with the
+listing's id and the publishable key, without waiting for it (`keepalive`) and without saying who; a failure
+changes nothing. Without the link — any listing that is not a store's, or the flag off — the page is as before.
+`storeLink` in `assets/listing-rules.js` keeps only an `https://` address with a host. A backend before 088 sends
+no `store_link`, so the page shows what it did before; the counting call needs 088 in production.
 
 - `assets/listing-rules.js` — pure rules (id parsing, platform detection, price and date formatting,
   URLs, the app's Spanish labels). Tested: `node --test`, run from the repository root (Node 22 or later finds `tests/*.test.mjs` itself).

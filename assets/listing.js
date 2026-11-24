@@ -58,6 +58,19 @@
     }).catch(function () { return { kind: "generic" }; });
   }
 
+  // Counts one click on «Ver en la tienda» (open_store_link, migration 088): never who, never awaited, and a
+  // failure changes nothing. keepalive lets the request finish while the browser opens the store's tab.
+  function countStoreLinkOpen(id) {
+    try {
+      fetch(backend.url + "/rest/v1/rpc/open_store_link", {
+        method: "POST",
+        keepalive: true,
+        headers: { apikey: backend.key, Authorization: "Bearer " + backend.key, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_listing_id: id }),
+      }).catch(function () { /* the count is best effort */ });
+    } catch (e) { /* the count is best effort */ }
+  }
+
   // ---- Rendering ---------------------------------------------------------------------------------
 
   function render(state) {
@@ -79,6 +92,7 @@
     $("description").hidden = !listing.description;
     fillSeller(seller);
     fillPlaces(bundle.places);
+    fillStoreLink(listing);
     fillSearchTags(bundle);
   }
 
@@ -190,6 +204,23 @@
     }
   }
 
+  // A store's listing with its link: «Ver en la tienda» leads, and the message button becomes the secondary
+  // «Preguntar a la tienda» (it still opens the download sheet). Without a link the actions stay as they were.
+  function fillStoreLink(listing) {
+    var link = rules.storeLink(listing);
+    var button = $("store-link");
+    button.hidden = !link;
+    $("message").hidden = !!link;
+    $("ask-store").hidden = !link;
+    if (link) {
+      button.href = link;
+      button.onclick = function () { countStoreLinkOpen(listing.id); };
+    } else {
+      button.removeAttribute("href");
+      button.onclick = null;
+    }
+  }
+
   function fillPlaces(places) {
     var list = $("places");
     list.textContent = "";
@@ -278,5 +309,5 @@
     fetchListing(id).then(render);
   }
 
-  window.MeeploPage = { render: render, fetchListing: fetchListing, platform: platform, backend: backend.url };
+  window.MeeploPage = { render: render, fetchListing: fetchListing, countStoreLinkOpen: countStoreLinkOpen, platform: platform, backend: backend.url };
 })();

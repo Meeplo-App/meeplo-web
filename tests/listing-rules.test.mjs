@@ -103,3 +103,15 @@ test('a sealed copy with a note on its box is named so; the note alone on anothe
   assert.equal(rules.structuredData(boxed, UUID, []).offers.itemCondition, 'https://schema.org/NewCondition');
   assert.equal(rules.searchTitle(boxed), 'Catan sellado · $650 · Meeplo');
 });
+
+test('storeLink: a store listing\'s https link, else null (P160)', () => {
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'https://dadosymeeples.mx/catan' }), 'https://dadosymeeples.mx/catan');
+  assert.equal(rules.storeLink({ ...LISTING, store_link: null }), null);
+  assert.equal(rules.storeLink(LISTING), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: '' }), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'http://dadosymeeples.mx/catan' }), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'javascript:alert(1)' }), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'https://dados y meeples.mx' }), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'https://' }), null);
+  assert.equal(rules.storeLink({ ...LISTING, store_link: 'https://x.mx/' + 'a'.repeat(500) }), null);
+});

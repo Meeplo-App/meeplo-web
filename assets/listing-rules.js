@@ -86,6 +86,22 @@
       encodeURIComponent(pageURL) + ";end";
   }
 
+  // ---- «Ver en la tienda» (P160, Meeplo-iOS migration 088) --------------------------------------
+
+  // The store's page for this listing, or null: browse_listing_page sends store_link only for a store's
+  // listing while the flag ver_en_tienda is open to everyone. The server already keeps it https and on the
+  // store's own site; the page checks again that it is an https address with a host before it links it.
+  function storeLink(listing) {
+    var value = listing && listing.store_link;
+    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/.test(value) || value.length > 500) return null;
+    try {
+      var url = new URL(value);
+      return url.protocol === "https:" && url.hostname ? value : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // ---- Search engines ----------------------------------------------------------------------------
   // What Google reads once the page has rendered a listing. Never the seller: their name stays out of
   // the title, the description and the structured data, and the page marks their block data-nosnippet.
@@ -170,6 +186,7 @@
     avatarURL: avatarURL,
     androidIntentURL: androidIntentURL,
     storeURLs: storeURLs,
+    storeLink: storeLink,
     canonicalURL: canonicalURL,
     searchTitle: searchTitle,
     conditionLabel: conditionLabel,
